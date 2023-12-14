@@ -23,21 +23,12 @@ turbocase export --testmanagement Testiny src/partial.feature.yaml
 # multiple files
 turbocase export --testmanagement Testiny src/*
 ```
+## Contribution Guide
 
-4. BDD
-```gherkin
-Feature: TurboCase
+Follow Git commits that comply with [Conventional Commits](https://github.com/conventional-changelog/commitlint/tree/master/%40commitlint/config-conventional)
 
-    Scenario: Bundle a test case
-
-        Given a manual test file
-        When I run "bundle" command
-        And specify "--testmanagement Testiny"
-        Then I should get a csv with my test cases
-```
-
-# References:
+## References:
 - [Testiny CLI](https://www.testiny.io/docs/automation/reference/)
 - [Testiny API](https://www.testiny.io/docs/rest-api/testiny-api/)
 - [Python Click](https://click.palletsprojects.com/en/8.1.x/)
-
+- [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
