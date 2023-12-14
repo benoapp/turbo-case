@@ -4,31 +4,36 @@ A CLI App to enable manual-test-case-as-code
 
 ## How to use
 
-1. Create a test file:
+1. Create a test file using YAML:
+
 ```yaml
 #
 title: string
 precondition:
-- string
+  - string
 steps:
-- string
+  - string
 expect:
-- string
+  - string
 ```
 
-2. sync with Testiny
+2. Sync with Testiny
+
 ```shell
 # single file
-turbocase export --testmanagement Testiny src/partial.feature.yaml
+turbocase export --test-management Testiny src/partial.feature.yaml
+
 # multiple files
-turbocase export --testmanagement Testiny src/*
+turbocase export --test-management Testiny src/*
 ```
+
 ## Contribution Guide
 
 Follow Git commits that comply with [Conventional Commits](https://github.com/conventional-changelog/commitlint/tree/master/%40commitlint/config-conventional)
 
-## References:
+# References:
+
 - [Testiny CLI](https://www.testiny.io/docs/automation/reference/)
 - [Testiny API](https://www.testiny.io/docs/rest-api/testiny-api/)
-- [Python Click](https://click.palletsprojects.com/en/8.1.x/)
+- [Python argparse](https://docs.python.org/3/library/argparse.html)
 - [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
