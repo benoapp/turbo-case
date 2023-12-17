@@ -1,1 +1,13 @@
+# folders
+__pycache__/
+.venv/
+.vscode/
+node_modules/
+bin/
+
+# files
+*.pyc
 .env
+package-lock.json
+package.json
+.DS_Store
