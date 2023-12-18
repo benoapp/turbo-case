@@ -1,0 +1,23 @@
+title: Yacht Deal Page Test
+design: # indicates visual test
+  URL: https://figma.com/..
+precondition:
+  - when open the detailed page of any yacht deal, user should be able to see:
+steps: |
+      yacht images and name
+      description
+      manufacturing country
+      features: size, bedrooms, crew no, guest, washrooms, kitchen, air condition
+      Beno evaluation
+      language spoken by the crew
+      suitable for section
+      included for free section
+      drinks included section
+      trip destination map
+      yacht location
+      route details
+      yacht video
+      boat policy
+      select dates field and book now button
+expect:
+  Matches design
