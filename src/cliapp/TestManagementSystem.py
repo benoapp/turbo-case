@@ -1,11 +1,10 @@
-from argparse import Namespace
 import yaml
 import json
 import requests
 from abc import ABC, abstractmethod
 
 
-class TestSystem(ABC):
+class TestManagementSystem(ABC):
     @staticmethod
     @abstractmethod
     def create_test_case(file_path: str, api_key: str):
@@ -18,7 +17,7 @@ class TestSystem(ABC):
         pass
 
 
-class Testiny(TestSystem):
+class Testiny(TestManagementSystem):
     __CONTENT_TYPE = "application/json"
 
     @staticmethod
@@ -65,7 +64,7 @@ class Testiny(TestSystem):
         response.raise_for_status()
 
 
-def get_test_system(system_name: str) -> TestSystem:
+def get_test_system(system_name: str) -> TestManagementSystem:
     if system_name == "Testiny":
         return Testiny()
     else:

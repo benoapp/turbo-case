@@ -1,18 +1,17 @@
 import argparse
 import utility
-import TestSystem
+import cliapp.TestManagementSystem as TestManagementSystem
 
 
 def parse_args(parser: argparse.ArgumentParser):
     args = parser.parse_args()
-
     if not any(vars(args).values()):
         utility.print_banner()
         parser.print_help()
 
     if args.selected_command == "create":
         for file_path in args.files:
-            TestSystem.get_test_system(args.system).create_test_case(
+            TestManagementSystem.get_test_system(args.system).create_test_case(
                 file_path, args.api_key
             )
 
