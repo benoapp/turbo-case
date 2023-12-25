@@ -1,7 +1,7 @@
 title: Yacht Deal Page Test
 design: # indicates visual test
   URL: https://figma.com/..
-precondition:
+preconditions:
   - when open the detailed page of any yacht deal, user should be able to see:
 steps: |
       yacht images and name
@@ -19,5 +19,6 @@ steps: |
       yacht video
       boat policy
       select dates field and book now button
-expect:
-  Matches design
+expected result:
+  - Matches design
+project id: 2

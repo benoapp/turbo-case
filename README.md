@@ -1,31 +1,34 @@
 # TurboCase
+
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org)
 
 A CLI App to enable manual-test-case-as-code
 
+## Supported Test Management Systems:
+Currently, the following test management systems are supported:
+1. [Testiny](https://www.testiny.io/)
+
 ## How to use
+
+## Creating a new test case
 
 1. Create a test file using YAML:
 
 ```yaml
-#
 title: string
-precondition:
+preconditions:
   - string
 steps:
   - string
-expect:
+expected results:
   - string
+project id: 2
 ```
 
-2. Sync with Testiny
+2. Submit test case to the test management system
 
 ```shell
-# single file
-turbocase export --test-management Testiny src/partial.feature.yaml
-
-# multiple files
-turbocase export --test-management Testiny src/*
+turbocase create test_one.yaml test_two.yaml --system <NAME> --api-key <KEY> 
 ```
 
 ## Contribution Guide

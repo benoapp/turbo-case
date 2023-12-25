@@ -1,5 +1,5 @@
 title: Even
-preconditions:
+precondition:
   - checkout a deal
 steps:
   - click on split payment
@@ -8,4 +8,3 @@ steps:
 expected results:
   - success
 project id: 2
-owner id: 1894 # optional
