@@ -1,6 +1,7 @@
 import argparse
 import utility
-import cliapp.TestManagementSystem as TestManagementSystem
+from TestManagementSystems.Factory import Factory
+from rich import print as pprint
 
 
 def parse_args(parser: argparse.ArgumentParser):
@@ -11,9 +12,12 @@ def parse_args(parser: argparse.ArgumentParser):
 
     if args.selected_command == "create":
         for file_path in args.files:
-            TestManagementSystem.get_test_system(args.system).create_test_case(
+            Factory.get_test_management_system(args.system).create_test_case(
                 file_path, args.api_key
             )
+        pprint(
+            f"[green]Successfully created [cyan]{len(args.files)}[/cyan] test case{'s' * (len(args.files) > 1)}."
+        )
 
 
 def main():
