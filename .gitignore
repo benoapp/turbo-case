@@ -1,9 +1,11 @@
 # folders
 __pycache__/
 .venv/
+venv/
 .vscode/
 node_modules/
 bin/
+build/
 
 # files
 *.pyc
