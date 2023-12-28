@@ -5,6 +5,7 @@ bin/
 .DS_Store
 .vscode/
 temp/
+TODO.md
 
 ### The following is a template obtained from https://github.com/github/gitignore/blob/main/Python.gitignore
 # Byte-compiled / optimized / DLL files
