@@ -20,10 +20,10 @@ class Testiny(TestManagementSystem):
         response = requests.get(url, headers=headers)
         response.raise_for_status()
 
-        user_id = response.json()["userId"]
-        if user_id == "No user context":
-            raise ValueError("No user found associated with the API key")
-        return user_id
+        response = response.json()
+        if "error" in response.keys():
+            raise ValueError("No user found associated with the given API key")
+        return response["userId"]
 
     @staticmethod
     def __read_test_case(file_path: str):
