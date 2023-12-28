@@ -8,7 +8,9 @@ import os
 
 class Testiny(TestManagementSystem):
     __CONTENT_TYPE = "application/json"
-    __SCHEMA_FILE_PATH = os.path.join(os.path.dirname(__file__), "testiny_schema.json")
+    __SCHEMA_FILE_PATH = os.path.join(
+        os.path.dirname(__file__), "testiny_schema.json"
+    )  # TODO: write this in a better (safer) way
 
     @staticmethod
     def __get_owner_id(api_key: str) -> int:
