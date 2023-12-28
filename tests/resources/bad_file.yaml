@@ -1,0 +1,10 @@
+title: This is a bad file
+preconditions:
+  - checkout a deal
+steps:
+  - click on split payment
+  - fill default credit card
+  - click on pay
+expected results:
+  - success
+project id: 2.2
