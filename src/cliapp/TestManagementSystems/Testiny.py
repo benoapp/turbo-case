@@ -94,6 +94,4 @@ class Testiny(TestManagementSystem):
         )
 
         response = requests.request("PUT", url, headers=headers, data=payload)
-        print("-->", response.text)
-        print("-->", response.status_code)
         response.raise_for_status()
