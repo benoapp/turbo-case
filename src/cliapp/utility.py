@@ -11,7 +11,7 @@ banner = r"""
 """
 
 
-def get_version():
+def get_version():  # TODO: find a better way to get the version (maybe from setup.py)
     return "0.0.1"
 
 
