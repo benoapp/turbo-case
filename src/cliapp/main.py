@@ -6,17 +6,26 @@ from rich import print as pprint
 
 def parse_args(parser: argparse.ArgumentParser):
     args = parser.parse_args()
+
     if not any(vars(args).values()):
         utility.print_banner()
         parser.print_help()
 
     if args.selected_command == "create":
+        created_files_n = 0
         for file_path in args.files:
-            Factory.get_test_management_system(args.system).create_test_case(
-                file_path, args.api_key
-            )
+            try:
+                test_management_system = Factory.get_test_management_system(args.system)
+                test_management_system.create_test_case(file_path, args.api_key)
+                created_files_n += 1
+            except Exception as e:
+                pprint(
+                    f"[red][ERR] Failed to create test case from file: [yellow]`{file_path}`[/yellow]. Reason:\n{e}\n"
+                )
+
+        test_case_plural = "s" if len(args.files) > 1 else ""
         pprint(
-            f"[green]Successfully created [cyan]{len(args.files)}[/cyan] test case{'s' * (len(args.files) > 1)}."
+            f"[green]Created [cyan]{created_files_n}/{len(args.files)}[/cyan] test case{test_case_plural}."
         )
 
 

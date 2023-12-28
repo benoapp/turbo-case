@@ -1,0 +1,47 @@
+{
+    "$schema": "https://json-schema.org/draft-07/schema",
+    "title": "Test Case",
+    "description": "A Test Case for the Testiny Test Case Management",
+    "type": "object",
+    "required": [
+        "title",
+        "preconditions",
+        "steps",
+        "expected results",
+        "project id"
+    ],
+    "properties": {
+        "title": {
+            "description": "The title of the test case",
+            "type": "string"
+        },
+        "preconditions": {
+            "description": "The preconditions of the test case",
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "minItems": 1
+        },
+        "steps": {
+            "description": "The steps of the test case",
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "minItems": 1
+        },
+        "expected results": {
+            "description": "The expected results of the test case",
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "minItems": 1
+        },
+        "project id": {
+            "description": "The id of the project the test case belongs to",
+            "type": "integer"
+        }
+    }
+}
