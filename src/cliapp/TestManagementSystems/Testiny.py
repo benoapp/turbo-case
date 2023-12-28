@@ -44,9 +44,9 @@ class Testiny(TestManagementSystem):
 
     @staticmethod
     def create_test_case(file_path: str, api_key: str):
-        data = Testiny.__read_test_case(file_path)
-
         url = "https://app.testiny.io/api/v1/testcase"
+
+        data = Testiny.__read_test_case(file_path)
 
         headers = {
             "Content-Type": Testiny.__CONTENT_TYPE,
@@ -54,17 +54,46 @@ class Testiny(TestManagementSystem):
             "X-Api-Key": api_key,
         }
 
-        payload = {
-            "title": data["title"],
-            "precondition_text": "\n".join(data["preconditions"]),
-            "steps_text": "\n".join(data["steps"]),
-            "expected_result_text": "\n".join(data["expected results"]),
-            "project_id": data["project id"],
-            "template": "TEXT",
-            "owner_user_id": Testiny.__get_owner_id(api_key),
-        }
-
-        payload = json.dumps(payload)
+        payload = json.dumps(
+            {
+                "title": data["title"],
+                "precondition_text": "\n".join(data["preconditions"]),
+                "steps_text": "\n".join(data["steps"]),
+                "expected_result_text": "\n".join(data["expected results"]),
+                "project_id": data["project id"],
+                "template": "TEXT",
+                "owner_user_id": Testiny.__get_owner_id(api_key),
+            }
+        )
 
         response = requests.request("POST", url, headers=headers, data=payload)
+        response.raise_for_status()
+
+    @staticmethod
+    def update_test_case(file_path: str, api_key: str, test_case_id: int):
+        url = f"https://app.testiny.io/api/v1/testcase/{test_case_id}"
+
+        data = Testiny.__read_test_case(file_path)
+
+        headers = {
+            "Content-Type": Testiny.__CONTENT_TYPE,
+            "Accept": Testiny.__CONTENT_TYPE,
+            "X-Api-Key": api_key,
+        }
+
+        payload = json.dumps(
+            {
+                "title": data["title"],
+                "precondition_text": "\n".join(data["preconditions"]),
+                "steps_text": "\n".join(data["steps"]),
+                "expected_result_text": "\n".join(data["expected results"]),
+                "project_id": data["project id"],
+                "template": "TEXT",
+                "owner_user_id": Testiny.__get_owner_id(api_key),
+            }
+        )
+
+        response = requests.request("PUT", url, headers=headers, data=payload)
+        print("-->", response.text)
+        print("-->", response.status_code)
         response.raise_for_status()
