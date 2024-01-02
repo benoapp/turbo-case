@@ -98,3 +98,17 @@ class Testiny(TestManagementSystem):
 
         response = requests.request("PUT", url, headers=headers, data=payload)
         response.raise_for_status()
+
+    @staticmethod
+    def read_test_case(api_key: str, test_case_id: int):
+        url = f"https://app.testiny.io/api/v1/testcase/{test_case_id}"
+
+        headers = {
+            "Accept": Testiny.__CONTENT_TYPE,
+            "X-Api-Key": api_key,
+        }
+
+        response = requests.request("GET", url, headers=headers)
+        response.raise_for_status()
+
+        return response.json()
