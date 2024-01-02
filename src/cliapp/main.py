@@ -2,6 +2,7 @@ import argparse
 import utility
 from TestManagementSystems.Factory import Factory
 from rich import print as pprint
+from requests.exceptions import HTTPError
 
 HELP_MESSAGE = "Show help"
 
@@ -236,7 +237,7 @@ def main():
     add_global_options(parser)
 
     add_create_command(subparsers)
-    
+
     add_update_command(subparsers)
 
     add_read_command(subparsers)

@@ -5,6 +5,7 @@ import json
 import jsonschema
 import os
 from overrides import override
+from typing import Any
 
 
 class Testiny(TestManagementSystem):
@@ -100,7 +101,8 @@ class Testiny(TestManagementSystem):
         response.raise_for_status()
 
     @staticmethod
-    def read_test_case(api_key: str, test_case_id: int):
+    @override
+    def read_test_case(api_key: str, test_case_id: int) -> Any:
         url = f"https://app.testiny.io/api/v1/testcase/{test_case_id}"
 
         headers = {
