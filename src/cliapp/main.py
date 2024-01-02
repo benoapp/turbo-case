@@ -200,6 +200,22 @@ def add_read_command(subparsers: argparse._SubParsersAction):
     )
 
 
+def handle_read_command(args):
+    try:
+        test_management_system = Factory.get_test_management_system(args.system)
+        test_case_info = test_management_system.read_test_case(args.api_key, args.id)
+        pprint(test_case_info)
+    except Exception as e:
+        pprint(
+            f"[red][ERR] Failed to read test case with ID: [yellow]`{args.id}`[/yellow]. Reason:\n{e}"
+        )
+        if isinstance(e, HTTPError):
+            if e.response.status_code == 403:
+                pprint("[blue]Hint: Are you sure you used the correct API key?")
+            elif e.response.status_code == 404:
+                pprint("[blue]Hint: Are you sure you used the correct test case ID?")
+
+
 def parse_args(parser: argparse.ArgumentParser):
     args = parser.parse_args()
 
@@ -207,8 +223,11 @@ def parse_args(parser: argparse.ArgumentParser):
         utility.print_banner()
         parser.print_help()
 
-    if args.selected_command == "create":
+    elif args.selected_command == "create":
         handle_create_command(args)
+
+    elif args.selected_command == "read":
+        handle_read_command(args)
 
 
 def main():
@@ -217,8 +236,10 @@ def main():
     add_global_options(parser)
 
     add_create_command(subparsers)
-
+    
     add_update_command(subparsers)
+
+    add_read_command(subparsers)
 
     parse_args(parser)
 
