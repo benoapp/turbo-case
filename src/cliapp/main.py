@@ -156,6 +156,50 @@ def add_update_command(subparsers: argparse._SubParsersAction):
 def handle_update_command(args):
     pass  # todo
 
+
+def add_read_command(subparsers: argparse._SubParsersAction):
+    read_parser = subparsers.add_parser(
+        "read",
+        help="Read existing test cases (search by ID)",
+        description="Read existing test cases (search by ID)",
+        add_help=False,
+        formatter_class=utility.CustomHelpFormatter,
+    )
+
+    read_parser.add_argument(
+        "-s",
+        "--system",
+        default="Testiny",
+        help="Test management system. Default: Testiny. Options: Testiny",
+        metavar="<system>",
+        choices=["Testiny"],
+    )
+
+    read_parser.add_argument(
+        "-k",
+        "--api-key",
+        required=True,
+        metavar="<key>",
+        help="API key",
+    )
+
+    read_parser.add_argument(
+        "-i",
+        "--id",
+        required=True,
+        metavar="<id>",
+        type=int,
+        help="Test case ID",
+    )
+
+    read_parser.add_argument(
+        "-h",
+        "--help",
+        action="help",
+        help=HELP_MESSAGE,
+    )
+
+
 def parse_args(parser: argparse.ArgumentParser):
     args = parser.parse_args()
 
