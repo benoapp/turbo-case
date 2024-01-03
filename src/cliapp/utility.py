@@ -36,4 +36,5 @@ class CustomHelpFormatter(argparse.HelpFormatter):
             .format_help()
             .replace("usage:", "Usage:")
             .replace("options:", "Options:")
+            .replace("positional arguments:", "Arguments:")
         )
