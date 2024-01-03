@@ -97,6 +97,60 @@ def handle_create_command(args):
         f"[green]Created [cyan]{created_files_n}/{len(args.files)}[/cyan] test case{test_case_plural}."
     )
 
+
+def add_update_command(subparsers: argparse._SubParsersAction):
+    update_parser = subparsers.add_parser(
+        "update",
+        help="Override existing test cases (search by ID)",
+        description="Override existing test cases (search by ID)",
+        add_help=False,
+        formatter_class=utility.CustomHelpFormatter,
+    )
+
+    update_parser.add_argument(
+        "files",
+        help="Paths of (YAML) test files",
+        metavar="<file>",
+        nargs="+",
+    )
+
+    update_parser.add_argument(
+        "-s",
+        "--system",
+        default="Testiny",
+        help="Test management system. Default: Testiny. Options: Testiny",
+        metavar="<system>",
+        choices=["Testiny"],
+    )
+
+    update_parser.add_argument(
+        "-k",
+        "--api-key",
+        required=True,
+        metavar="<key>",
+        help="API key",
+    )
+
+    update_parser.add_argument(
+        "-i",
+        "--id",
+        required=True,
+        metavar="<id>",
+        type=int,
+        help="Test case ID",
+    )
+
+    update_parser.add_argument(
+        "-h",
+        "--help",
+        action="help",
+        help=HELP_MESSAGE,
+    )
+
+
+def handle_update_command(args):
+    pass  # todo
+
 def parse_args(parser: argparse.ArgumentParser):
     args = parser.parse_args()
 
@@ -114,6 +168,8 @@ def main():
     add_global_options(parser)
 
     add_create_command(subparsers)
+
+    add_update_command(subparsers)
 
     parse_args(parser)
 
