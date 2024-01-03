@@ -82,7 +82,7 @@ def add_create_command(subparsers: argparse._SubParsersAction):
     )
 
 
-def handle_create_command(args):
+def handle_create_command(args: argparse.Namespace):
     created_files_n = 0
     for file_path in args.files:
         try:
@@ -213,7 +213,7 @@ def add_read_command(subparsers: argparse._SubParsersAction):
     )
 
 
-def handle_read_command(args):
+def handle_read_command(args: argparse.Namespace):
     try:
         test_management_system = Factory.get_test_management_system(args.system)
         test_case_info = test_management_system.read_test_case(args.api_key, args.id)
