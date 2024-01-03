@@ -28,7 +28,7 @@ class Testiny(TestManagementSystem):
         return response["userId"]
 
     @staticmethod
-    def __read_test_case(file_path: str):
+    def __read_test_case_schema(file_path: str):
         if not file_path.endswith((".yaml", ".yml")):
             raise ValueError("File path does not refer to a valid YAML file")
 
@@ -46,7 +46,7 @@ class Testiny(TestManagementSystem):
     def create_test_case(file_path: str, api_key: str):
         url = "https://app.testiny.io/api/v1/testcase"
 
-        data = Testiny.__read_test_case(file_path)
+        data = Testiny.__read_test_case_schema(file_path)
 
         headers = {
             "Content-Type": Testiny.__CONTENT_TYPE,
@@ -73,7 +73,7 @@ class Testiny(TestManagementSystem):
     def update_test_case(file_path: str, api_key: str, test_case_id: int):
         url = f"https://app.testiny.io/api/v1/testcase/{test_case_id}"
 
-        data = Testiny.__read_test_case(file_path)
+        data = Testiny.__read_test_case_schema(file_path)
 
         headers = {
             "Content-Type": Testiny.__CONTENT_TYPE,
