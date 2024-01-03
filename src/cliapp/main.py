@@ -114,10 +114,9 @@ def add_update_command(subparsers: argparse._SubParsersAction):
     )
 
     update_parser.add_argument(
-        "files",
+        "file",
         help="Paths of (YAML) test files",
         metavar="<file>",
-        nargs="+",
     )
 
     update_parser.add_argument(
