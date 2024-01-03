@@ -83,10 +83,10 @@ def add_create_command(subparsers: argparse._SubParsersAction):
 
 
 def handle_create_command(args: argparse.Namespace):
+    test_management_system = Factory.get_test_management_system(args.system)
     created_files_n = 0
     for file_path in args.files:
         try:
-            test_management_system = Factory.get_test_management_system(args.system)
             test_management_system.create_test_case(file_path, args.api_key)
             pprint(
                 f"[green]:heavy_check_mark: Created test case from file: [yellow]`{file_path}`[/yellow]."
