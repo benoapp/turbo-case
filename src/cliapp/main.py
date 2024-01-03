@@ -9,9 +9,8 @@ HELP_MESSAGE = "Show help"
 def create_main_and_sub_parsers():
     parser = argparse.ArgumentParser(
         prog="turbocase",
-        description="Turbo-Case is a helper CLI App that enables manual-test-as-code",
+        description="Turbo-Case: a helper CLI App that enables manual-test-as-code",
         add_help=False,
-        usage="%(prog)s [command] [options]",
         formatter_class=utility.CustomHelpFormatter,
     )
 
