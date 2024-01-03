@@ -60,7 +60,7 @@ def add_create_command(subparsers: argparse._SubParsersAction):
         "-s",
         "--system",
         default="Testiny",
-        help="Test management system. Default: Testiny. Options: Testiny",
+        help="Test management system. Default: Testiny. Options: Testiny",  # TODO: add a msg that says: use .env file to set the default system, (and remove the current Default msg)
         metavar="<system>",
         choices=["Testiny"],
     )
