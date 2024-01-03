@@ -87,13 +87,17 @@ def handle_create_command(args):
         try:
             test_management_system = Factory.get_test_management_system(args.system)
             test_management_system.create_test_case(file_path, args.api_key)
+            pprint(
+                f"[green]:heavy_check_mark: Created test case from file: [yellow]`{file_path}`[/yellow]."
+            )
             created_files_n += 1
         except Exception as e:
             pprint(
-                f"[red][ERR] Failed to create test case from file: [yellow]`{file_path}`[/yellow]. Reason:\n{e}\n"
+                f"[red][ERR] Failed to create test case from file: [yellow]`{file_path}`[/yellow]. Reason:\n{e}"
             )
 
     test_case_plural = "s" if len(args.files) > 1 else ""
+    pprint("\n[cyan]Done")
     pprint(
         f"[green]Created [cyan]{created_files_n}/{len(args.files)}[/cyan] test case{test_case_plural}."
     )
