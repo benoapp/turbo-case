@@ -46,11 +46,13 @@ def add_create_command(subparsers: argparse._SubParsersAction):
         help="Create test cases from YAML files",
         description="Create test cases from YAML files",
         add_help=False,
+        formatter_class=utility.CustomHelpFormatter,
     )
 
     create_parser.add_argument(
         "files",
-        help="Paths of (YAML) test files",
+        help="Path of (YAML) test files",
+        metavar="<file>",
         nargs="+",
     )
 
