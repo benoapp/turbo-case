@@ -94,7 +94,7 @@ def handle_create_command(args: argparse.Namespace):
             created_files_n += 1
         except Exception as e:
             pprint(
-                f"[red][ERR] Failed to create test case from file: [yellow]`{file_path}`[/yellow]. Reason:\n{e}"
+                f"[red][ERR] Failed to create test case from file: [yellow]`{file_path}`[/yellow]. Reason:\n[dark_orange]{e}"
             )
 
     test_case_plural = "s" if len(args.files) > 1 else ""
