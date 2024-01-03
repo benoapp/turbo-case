@@ -208,13 +208,17 @@ def handle_read_command(args):
         pprint(test_case_info)
     except Exception as e:
         pprint(
-            f"[red][ERR] Failed to read test case with ID: [yellow]`{args.id}`[/yellow]. Reason:\n{e}"
+            f"[red][bold][ERR][/bold] Failed to read test case with ID: [yellow]`{args.id}`[/yellow]. Reason:\n[dark_orange]{e}"
         )
         if isinstance(e, HTTPError):
             if e.response.status_code == 403:
-                pprint("[blue]Hint: Are you sure you used the correct API key?")
+                pprint(
+                    "[blue][bold]Hint:[/bold] Are you sure you used the correct API key?"
+                )
             elif e.response.status_code == 404:
-                pprint("[blue]Hint: Are you sure you used the correct test case ID?")
+                pprint(
+                    "[blue][bold]Hint:[/bold] Are you sure you used the correct test case ID?"
+                )
 
 
 def parse_args(parser: argparse.ArgumentParser):
