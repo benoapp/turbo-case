@@ -4,6 +4,7 @@ import yaml
 import json
 import jsonschema
 import os
+from overrides import override
 
 
 class Testiny(TestManagementSystem):
@@ -43,6 +44,7 @@ class Testiny(TestManagementSystem):
         return data
 
     @staticmethod
+    @override
     def create_test_case(file_path: str, api_key: str):
         url = "https://app.testiny.io/api/v1/testcase"
 
@@ -70,7 +72,8 @@ class Testiny(TestManagementSystem):
         response.raise_for_status()
 
     @staticmethod
-    def update_test_case(file_path: str, api_key: str, test_case_id: int):
+    @override
+    def update_test_case(file_path: str, api_key: str, test_case_id: int) -> None:
         url = f"https://app.testiny.io/api/v1/testcase/{test_case_id}"
 
         data = Testiny.__read_test_case_schema(file_path)

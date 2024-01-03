@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
+from typing import Any
+from overrides import EnforceOverrides
 
 
-class TestManagementSystem(ABC):
+class TestManagementSystem(ABC, EnforceOverrides):
     @staticmethod
     @abstractmethod
     def create_test_case(file_path: str, api_key: str):
