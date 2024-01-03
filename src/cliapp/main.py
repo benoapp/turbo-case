@@ -154,8 +154,21 @@ def add_update_command(subparsers: argparse._SubParsersAction):
     )
 
 
-def handle_update_command(args):
-    pass  # todo
+def handle_update_command(args: argparse.Namespace):
+    test_management_system = Factory.get_test_management_system(args.system)
+    try:
+        test_management_system.update_test_case(args.file, args.api_key, args.id)
+        pprint(
+            f"[green]:heavy_check_mark: Successfully updated test case with ID: [yellow]`{args.id}`[/yellow]."
+        )
+    except Exception as e:
+        pprint(
+            f"[red][bold][ERR][/bold] Failed to update test case with ID: [yellow]`{args.id}`[/yellow]. Reason:\n[dark_orange]{e}"
+        )
+        if isinstance(e, HTTPError) and e.response.status_code == 404:
+            pprint(
+                "[blue][bold]Hint:[/bold] Are you sure you used the correct test case ID?"
+            )
 
 
 def add_read_command(subparsers: argparse._SubParsersAction):
@@ -233,6 +246,9 @@ def parse_args(parser: argparse.ArgumentParser):
 
     elif args.selected_command == "read":
         handle_read_command(args)
+
+    elif args.selected_command == "update":
+        handle_update_command(args)
 
 
 def main():
