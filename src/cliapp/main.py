@@ -107,8 +107,8 @@ def handle_create_command(args: argparse.Namespace):
 def add_update_command(subparsers: argparse._SubParsersAction):
     update_parser = subparsers.add_parser(
         "update",
-        help="Override existing test cases (search by ID)",
-        description="Override existing test cases (search by ID)",
+        help="Overwrite existing test cases (search by ID)",
+        description="Overwrite existing test cases (search by ID)",
         add_help=False,
         formatter_class=utility.CustomHelpFormatter,
     )
