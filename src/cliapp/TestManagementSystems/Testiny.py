@@ -79,7 +79,9 @@ class Testiny(TestManagementSystem):
 
     @staticmethod
     @override
-    def update_test_case(file_path: str, api_key: str, test_case_id: int) -> None:
+    def update_test_case(
+        file_path: str, api_key: str, test_case_id: int, *, __user_id=None, __etag=None
+    ) -> None:
         url = f"https://app.testiny.io/api/v1/testcase/{test_case_id}"
 
         data = Testiny.__read_test_case_schema(file_path)
@@ -98,8 +100,12 @@ class Testiny(TestManagementSystem):
                 "expected_result_text": "\n".join(data["expected results"]),
                 "project_id": data["project id"],
                 "template": "TEXT",
-                "owner_user_id": Testiny.__get_owner_id(api_key),
-                "_etag": Testiny.__get_etag(api_key, test_case_id),
+                "owner_user_id": __user_id
+                if __user_id is not None
+                else Testiny.__get_owner_id(api_key),
+                "_etag": __etag
+                if __etag is not None
+                else Testiny.__get_etag(api_key, test_case_id),
             }
         )
 
