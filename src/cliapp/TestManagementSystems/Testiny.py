@@ -30,6 +30,11 @@ class Testiny(TestManagementSystem):
         return response["userId"]
 
     @staticmethod
+    def __get_etag(api_key: str, test_case_id: int) -> str:
+        test_case = Testiny.read_test_case(api_key, test_case_id)
+        return test_case["_etag"]
+
+    @staticmethod
     def __read_test_case_schema(file_path: str):
         if not file_path.endswith((".yaml", ".yml")):
             raise ValueError("File path does not refer to a valid YAML file")
@@ -94,6 +99,7 @@ class Testiny(TestManagementSystem):
                 "project_id": data["project id"],
                 "template": "TEXT",
                 "owner_user_id": Testiny.__get_owner_id(api_key),
+                "_etag": Testiny.__get_etag(api_key, test_case_id),
             }
         )
 
