@@ -27,6 +27,23 @@ def create_main_and_sub_parsers():
 
 def add_global_options(parser: argparse.ArgumentParser):
     parser.add_argument(
+        "-k",
+        "--api-key",
+        required=True,
+        metavar="<key>",
+        help="API key",
+    )
+
+    parser.add_argument(
+        "-s",
+        "--system",
+        default="Testiny",
+        help="Test management system. Default: Testiny. Options: Testiny",
+        metavar="<system>",
+        choices=["Testiny"],
+    )
+
+    parser.add_argument(
         "-h",
         "--help",
         action="help",
@@ -55,23 +72,6 @@ def add_create_command(subparsers: argparse._SubParsersAction):
         help="Path of (YAML) test files",
         metavar="<file>",
         nargs="+",
-    )
-
-    create_parser.add_argument(
-        "-s",
-        "--system",
-        default="Testiny",
-        help="Test management system. Default: Testiny. Options: Testiny",  # TODO: add a msg that says: use .env file to set the default system, (and remove the current Default msg)
-        metavar="<system>",
-        choices=["Testiny"],
-    )
-
-    create_parser.add_argument(
-        "-k",
-        "--api-key",
-        required=True,
-        metavar="<key>",
-        help="API key",
     )
 
     create_parser.add_argument(
@@ -120,23 +120,6 @@ def add_update_command(subparsers: argparse._SubParsersAction):
     )
 
     update_parser.add_argument(
-        "-s",
-        "--system",
-        default="Testiny",
-        help="Test management system. Default: Testiny. Options: Testiny",
-        metavar="<system>",
-        choices=["Testiny"],
-    )
-
-    update_parser.add_argument(
-        "-k",
-        "--api-key",
-        required=True,
-        metavar="<key>",
-        help="API key",
-    )
-
-    update_parser.add_argument(
         "-i",
         "--id",
         required=True,
@@ -177,23 +160,6 @@ def add_read_command(subparsers: argparse._SubParsersAction):
         description="Read existing test cases (search by ID)",
         add_help=False,
         formatter_class=utility.CustomHelpFormatter,
-    )
-
-    read_parser.add_argument(
-        "-s",
-        "--system",
-        default="Testiny",
-        help="Test management system. Default: Testiny. Options: Testiny",
-        metavar="<system>",
-        choices=["Testiny"],
-    )
-
-    read_parser.add_argument(
-        "-k",
-        "--api-key",
-        required=True,
-        metavar="<key>",
-        help="API key",
     )
 
     read_parser.add_argument(
