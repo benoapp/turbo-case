@@ -5,7 +5,7 @@ import json
 import jsonschema
 import os
 from overrides import override
-from typing import Any
+from typing import Any, Tuple
 
 
 class Testiny(TestManagementSystem):
@@ -80,7 +80,7 @@ class Testiny(TestManagementSystem):
     @staticmethod
     @override
     def update_test_case(
-        file_path: str, api_key: str, test_case_id: int, *, __user_id=None, __etag=None
+        file_path: str, api_key: str, test_case_id: int, *, _etag=None
     ) -> None:
         url = f"https://app.testiny.io/api/v1/testcase/{test_case_id}"
 
@@ -100,11 +100,9 @@ class Testiny(TestManagementSystem):
                 "expected_result_text": "\n".join(data["expected results"]),
                 "project_id": data["project id"],
                 "template": "TEXT",
-                "owner_user_id": __user_id
-                if __user_id is not None
-                else Testiny.__get_owner_id(api_key),
-                "_etag": __etag
-                if __etag is not None
+                "owner_user_id": Testiny.__get_owner_id(api_key),
+                "_etag": _etag
+                if _etag is not None
                 else Testiny.__get_etag(api_key, test_case_id),
             }
         )
@@ -126,3 +124,47 @@ class Testiny(TestManagementSystem):
         response.raise_for_status()
 
         return response.json()
+
+    @staticmethod
+    @override
+    def upsert_test_case(file_path: str, api_key: str) -> str:
+        data = Testiny.__read_test_case_schema(file_path)
+        test_case = Testiny.___find_test_case_by_title(api_key, data["title"])
+        if test_case is None:
+            Testiny.create_test_case(file_path, api_key)
+            return "Created"
+        else:
+            test_case_id, etag = test_case
+            Testiny.update_test_case(file_path, api_key, test_case_id, _etag=etag)
+            return "Updated"
+
+    @staticmethod
+    def ___find_test_case_by_title(api_key: str, title: str) -> Tuple[int, str] | None:
+        url = "https://app.testiny.io/api/v1/testcase/find"
+
+        payload = json.dumps(
+            {
+                "filter": {
+                    "title": title,
+                },
+            }
+        )
+        headers = {
+            "Content-Type": Testiny.__CONTENT_TYPE,
+            "Accept": Testiny.__CONTENT_TYPE,
+            "X-Api-Key": api_key,
+        }
+
+        response = requests.request("POST", url, headers=headers, data=payload)
+        response.raise_for_status()
+
+        meta, data = response.json().values()
+        if meta["count"] == 0:
+            return None
+
+        if meta["count"] > 1:
+            raise ValueError(
+                "More than one test case found with the given title. Please use the `update` command."
+            )
+
+        return data[0]["id"], data[0]["_etag"]
