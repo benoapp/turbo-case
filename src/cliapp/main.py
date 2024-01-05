@@ -137,8 +137,8 @@ def add_update_command(subparsers: argparse._SubParsersAction):
 
 
 def handle_update_command(args: argparse.Namespace):
-    test_management_system = Factory.get_test_management_system(args.system)
     try:
+        test_management_system = Factory.get_test_management_system(args.system)
         test_management_system.update_test_case(args.file, args.api_key, args.id)
         pprint(
             f"[green]:heavy_check_mark: Successfully updated test case with ID: [yellow]`{args.id}`[/yellow]."
@@ -199,6 +199,61 @@ def handle_read_command(args: argparse.Namespace):
                 )
 
 
+def add_upsert_command(subparsers: argparse._SubParsersAction):
+    upsert_parser = subparsers.add_parser(
+        "upsert",
+        help="Updates a test case if it exist, creates new one if otherwise  (search by Title)",
+        description="Updates a test case if it exist, creates new one if otherwise  (search by Title)",
+        add_help=False,
+        formatter_class=utility.CustomHelpFormatter,
+    )
+
+    upsert_parser.add_argument(
+        "file",
+        help="Paths of (YAML) test files",
+        metavar="<file>",
+    )
+
+    upsert_parser.add_argument(
+        "-s",
+        "--system",
+        default="Testiny",
+        help="Test management system. Default: Testiny. Options: Testiny",
+        metavar="<system>",
+        choices=["Testiny"],
+    )
+
+    upsert_parser.add_argument(
+        "-k",
+        "--api-key",
+        required=True,
+        metavar="<key>",
+        help="API key",
+    )
+
+    upsert_parser.add_argument(
+        "-h",
+        "--help",
+        action="help",
+        help=HELP_MESSAGE,
+    )
+
+
+def handle_upsert_command(args: argparse.Namespace):
+    try:
+        test_management_system = Factory.get_test_management_system(args.system)
+        operation = test_management_system.upsert_test_case(args.file, args.api_key)
+        pprint(f"[green]:heavy_check_mark: Successfully {operation.lower()} test case.")
+    except Exception as e:
+        pprint(
+            f"[red][bold][ERR][/bold] Failed to upsert test case. Reason:\n[dark_orange]{e}"
+        )
+        if isinstance(e, HTTPError) and e.response.status_code == 403:
+            pprint(
+                "[blue][bold]Hint:[/bold] Are you sure you used the correct API key?"
+            )
+
+
 def parse_args(parser: argparse.ArgumentParser):
     args = parser.parse_args()
 
@@ -215,6 +270,9 @@ def parse_args(parser: argparse.ArgumentParser):
     elif args.selected_command == "update":
         handle_update_command(args)
 
+    elif args.selected_command == "upsert":
+        handle_upsert_command(args)
+
 
 def main():
     parser, subparsers = create_main_and_sub_parsers()
@@ -226,6 +284,8 @@ def main():
     add_update_command(subparsers)
 
     add_read_command(subparsers)
+
+    add_upsert_command(subparsers)
 
     parse_args(parser)
 
