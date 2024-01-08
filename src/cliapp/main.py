@@ -107,8 +107,8 @@ def handle_create_command(args: argparse.Namespace):
 def add_update_command(subparsers: argparse._SubParsersAction):
     update_parser = subparsers.add_parser(
         "update",
-        help="Overwrite existing test cases (search by ID)",
-        description="Overwrite existing test cases (search by ID)",
+        help="Overwrite existing test cases (match by ID)",
+        description="Overwrite existing test cases (match by ID)",
         add_help=False,
         formatter_class=utility.CustomHelpFormatter,
     )
@@ -202,8 +202,8 @@ def handle_read_command(args: argparse.Namespace):
 def add_upsert_command(subparsers: argparse._SubParsersAction):
     upsert_parser = subparsers.add_parser(
         "upsert",
-        help="Updates a test case if it exist, creates new one if otherwise  (search by Title)",
-        description="Updates a test case if it exist, creates new one if otherwise  (search by Title)",
+        help="Create a new test case if it doesn't exist, or update an existing one (match by Title)",
+        description="Create a new test case if it doesn't exist, or update an existing one (match by Title)",
         add_help=False,
         formatter_class=utility.CustomHelpFormatter,
     )
