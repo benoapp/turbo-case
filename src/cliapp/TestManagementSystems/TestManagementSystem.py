@@ -22,12 +22,17 @@ class TestManagementSystem(ABC, EnforceOverrides):
     @abstractmethod
     def update_test_case(
         file_path: str, api_key: str, test_case_id: int, *, _etag: str = None
-    ) -> None:
+    ) -> str:
         """Overwrites a test case from a YAML file using the passed API key
 
         Args:
             file_path (str): path to the YAML file containing the test case
             api_key (str): API key to use for updating the test case
+            test_case_id (int): ID of the test case to update
+            _etag (str, optional): ETag value for optimistic concurrency control. Defaults to None.
+
+        Returns:
+            str: The new _etag value if it is returned by the API
         """
         pass
 
