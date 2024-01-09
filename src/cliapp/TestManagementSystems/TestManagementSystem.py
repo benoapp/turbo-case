@@ -1,6 +1,13 @@
 from abc import ABC, abstractmethod
 from typing import Any
+from typing import Tuple
 from overrides import EnforceOverrides
+from enum import Enum
+
+
+class UpsertAction(Enum):
+    UPDATE = "update"
+    CREATE = "create"
 
 
 class TestManagementSystem(ABC, EnforceOverrides):
@@ -44,16 +51,22 @@ class TestManagementSystem(ABC, EnforceOverrides):
         Args:
             api_key (str): API key to use for reading the test case
             test_case_id (int): ID of the test case to read
+
+        Returns:
+            Any: The test case object
         """
         pass
 
     @staticmethod
     @abstractmethod
-    def upsert_test_case(file_path: str, api_key: str) -> str:
+    def upsert_test_case(file_path: str, api_key: str) -> Tuple[UpsertAction, int]:
         """Creates or updates a test case from a YAML file using the passed API key
 
         Args:
             file_path (str): path to the YAML file containing the test case
             api_key (str): API key to use for creating/updating the test case
+
+        Returns:
+            Tuple[UpsertAction, int]: a tuple containing the action performed (create or update) and the test case ID
         """
         pass

@@ -1,4 +1,5 @@
 from TestManagementSystems.TestManagementSystem import TestManagementSystem
+from TestManagementSystems.TestManagementSystem import UpsertAction
 import requests
 import yaml
 import json
@@ -131,16 +132,16 @@ class Testiny(TestManagementSystem):
 
     @staticmethod
     @override
-    def upsert_test_case(file_path: str, api_key: str) -> str:
+    def upsert_test_case(file_path: str, api_key: str) -> Tuple[UpsertAction, int]:
         data = Testiny.__read_test_case_schema(file_path)
         test_case = Testiny.___find_test_case_by_title(api_key, data["title"])
         if test_case is None:
-            Testiny.create_test_case(file_path, api_key)
-            return "Created"
+            test_case_id = Testiny.create_test_case(file_path, api_key)
+            return UpsertAction.CREATE, test_case_id
         else:
             test_case_id, etag = test_case
             Testiny.update_test_case(file_path, api_key, test_case_id, _etag=etag)
-            return "Updated"
+            return UpsertAction.UPDATE, test_case_id
 
     @staticmethod
     def ___find_test_case_by_title(api_key: str, title: str) -> Tuple[int, str] | None:
