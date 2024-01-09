@@ -87,9 +87,11 @@ def handle_create_command(args: argparse.Namespace):
     created_files_n = 0
     for file_path in args.files:
         try:
-            test_management_system.create_test_case(file_path, args.api_key)
+            test_case_id = test_management_system.create_test_case(
+                file_path, args.api_key
+            )
             pprint(
-                f"[green]:heavy_check_mark: Created test case from file: [yellow]`{file_path}`[/yellow]."
+                f"[green]:heavy_check_mark: Successfully created test case [yellow]`{test_case_id}`[/yellow] from file: [yellow]`{file_path}`[/yellow]."
             )
             created_files_n += 1
         except Exception as e:

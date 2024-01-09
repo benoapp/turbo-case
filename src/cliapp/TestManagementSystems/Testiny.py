@@ -51,7 +51,7 @@ class Testiny(TestManagementSystem):
 
     @staticmethod
     @override
-    def create_test_case(file_path: str, api_key: str):
+    def create_test_case(file_path: str, api_key: str) -> int:
         url = "https://app.testiny.io/api/v1/testcase"
 
         data = Testiny.__read_test_case_schema(file_path)
@@ -76,6 +76,8 @@ class Testiny(TestManagementSystem):
 
         response = requests.request("POST", url, headers=headers, data=payload)
         response.raise_for_status()
+
+        return response.json()["id"]
 
     @staticmethod
     @override
