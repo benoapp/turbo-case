@@ -1,15 +1,20 @@
-from TestManagementSystems.TestManagementSystem import TestManagementSystem
-from TestManagementSystems.TestManagementSystem import UpsertAction
+import json
+import os
+from typing import Any
+from typing import Tuple
 import requests
 import yaml
-import json
 import jsonschema
-import os
 from overrides import override
-from typing import Any, Tuple
+from TestManagementSystems.TestManagementSystem import TestManagementSystem
+from TestManagementSystems.TestManagementSystem import UpsertAction
 
 
 class Testiny(TestManagementSystem):
+    """
+    A class representing the [Testiny](https://www.testiny.io/) test management system.
+    """
+
     __CONTENT_TYPE = "application/json"
     __SCHEMA_FILE_PATH = os.path.join(
         os.path.dirname(__file__), "testiny_schema.json"
@@ -22,7 +27,7 @@ class Testiny(TestManagementSystem):
             "Accept": Testiny.__CONTENT_TYPE,
             "X-Api-Key": api_key,
         }
-        response = requests.get(url, headers=headers)
+        response = requests.request("GET", url, headers=headers, timeout=10)
         response.raise_for_status()
 
         response = response.json()
@@ -40,10 +45,10 @@ class Testiny(TestManagementSystem):
         if not file_path.endswith((".yaml", ".yml")):
             raise ValueError("File path does not refer to a valid YAML file")
 
-        with open(file_path, "r") as file:
+        with open(file_path, "r", encoding="utf-8") as file:
             data = yaml.safe_load(file)
 
-        with open(Testiny.__SCHEMA_FILE_PATH, "r") as schema_file:
+        with open(Testiny.__SCHEMA_FILE_PATH, "r", encoding="utf-8") as schema_file:
             schema = json.load(schema_file)
 
         jsonschema.validate(data, schema)
@@ -75,7 +80,9 @@ class Testiny(TestManagementSystem):
             }
         )
 
-        response = requests.request("POST", url, headers=headers, data=payload)
+        response = requests.request(
+            "POST", url, headers=headers, data=payload, timeout=10
+        )
         response.raise_for_status()
 
         return response.json()["id"]
@@ -110,7 +117,9 @@ class Testiny(TestManagementSystem):
             }
         )
 
-        response = requests.request("PUT", url, headers=headers, data=payload)
+        response = requests.request(
+            "PUT", url, headers=headers, data=payload, timeout=10
+        )
         response.raise_for_status()
 
         return response.json()["_etag"]
@@ -125,7 +134,7 @@ class Testiny(TestManagementSystem):
             "X-Api-Key": api_key,
         }
 
-        response = requests.request("GET", url, headers=headers)
+        response = requests.request("GET", url, headers=headers, timeout=10)
         response.raise_for_status()
 
         return response.json()
@@ -160,7 +169,9 @@ class Testiny(TestManagementSystem):
             "X-Api-Key": api_key,
         }
 
-        response = requests.request("POST", url, headers=headers, data=payload)
+        response = requests.request(
+            "POST", url, headers=headers, data=payload, timeout=10
+        )
         response.raise_for_status()
 
         meta, data = response.json().values()
@@ -169,7 +180,8 @@ class Testiny(TestManagementSystem):
 
         if meta["count"] > 1:
             raise ValueError(
-                "More than one test case found with the given title. Please use the `update` command."
+                "More than one test case found with the given title. "
+                "Please use the `update` command."
             )
 
         return data[0]["id"], data[0]["_etag"]

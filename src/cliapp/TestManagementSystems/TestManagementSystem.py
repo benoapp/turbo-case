@@ -1,16 +1,26 @@
 from abc import ABC, abstractmethod
 from typing import Any
 from typing import Tuple
-from overrides import EnforceOverrides
 from enum import Enum
+from overrides import EnforceOverrides
 
 
 class UpsertAction(Enum):
+    """
+    Enum representing the action to perform during an upsert operation.
+
+    Possible values:
+    - UPDATE: Indicates that the existing item was updated.
+    - CREATE: Indicates that a new item was created.
+    """
+
     UPDATE = "update"
     CREATE = "create"
 
 
 class TestManagementSystem(ABC, EnforceOverrides):
+    """Abstract base class for test management systems"""
+
     @staticmethod
     @abstractmethod
     def create_test_case(file_path: str, api_key: str) -> int:
@@ -23,7 +33,6 @@ class TestManagementSystem(ABC, EnforceOverrides):
         Returns:
             int: The ID of the created test case
         """
-        pass
 
     @staticmethod
     @abstractmethod
@@ -41,7 +50,6 @@ class TestManagementSystem(ABC, EnforceOverrides):
         Returns:
             str: The new _etag value if it is returned by the API
         """
-        pass
 
     @staticmethod
     @abstractmethod
@@ -55,7 +63,6 @@ class TestManagementSystem(ABC, EnforceOverrides):
         Returns:
             Any: The test case object
         """
-        pass
 
     @staticmethod
     @abstractmethod
@@ -67,6 +74,6 @@ class TestManagementSystem(ABC, EnforceOverrides):
             api_key (str): API key to use for creating/updating the test case
 
         Returns:
-            Tuple[UpsertAction, int]: a tuple containing the action performed (create or update) and the test case ID
+            Tuple[UpsertAction, int]: a tuple containing the action performed (create or update)
+                and the test case ID
         """
-        pass
