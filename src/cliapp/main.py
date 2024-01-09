@@ -214,23 +214,6 @@ def add_upsert_command(subparsers: argparse._SubParsersAction):
     )
 
     upsert_parser.add_argument(
-        "-s",
-        "--system",
-        default="Testiny",
-        help="Test management system. Default: Testiny. Options: Testiny",
-        metavar="<system>",
-        choices=["Testiny"],
-    )
-
-    upsert_parser.add_argument(
-        "-k",
-        "--api-key",
-        required=True,
-        metavar="<key>",
-        help="API key",
-    )
-
-    upsert_parser.add_argument(
         "-h",
         "--help",
         action="help",
