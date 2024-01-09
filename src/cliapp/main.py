@@ -98,12 +98,10 @@ def handle_create_command(args: argparse.Namespace):
             pprint(
                 f"[red][ERR] Failed to create test case from file: [yellow]`{file_path}`[/yellow]. Reason:\n[dark_orange]{e}"
             )
-
-    test_case_plural = "s" if len(args.files) > 1 else ""
-    pprint("\n[cyan]Done")
-    pprint(
-        f"[green]Created [cyan]{created_files_n}/{len(args.files)}[/cyan] test case{test_case_plural}."
-    )
+    if len(args.files) > 1:
+        pprint(
+            f"[green]Created [cyan]{created_files_n}/{len(args.files)}[/cyan] test cases."
+        )
 
 
 def add_update_command(subparsers: argparse._SubParsersAction):
@@ -190,15 +188,14 @@ def handle_read_command(args: argparse.Namespace):
         pprint(
             f"[red][bold][ERR][/bold] Failed to read test case with ID: [yellow]`{args.id}`[/yellow]. Reason:\n[dark_orange]{e}"
         )
-        if isinstance(e, HTTPError):
-            if e.response.status_code == 403:
-                pprint(
-                    "[blue][bold]Hint:[/bold] Are you sure you used the correct API key?"
-                )
-            elif e.response.status_code == 404:
-                pprint(
-                    "[blue][bold]Hint:[/bold] Are you sure you used the correct test case ID?"
-                )
+        if isinstance(e, HTTPError) and e.response.status_code == 403:
+            pprint(
+                "[blue][bold]Hint:[/bold] Are you sure you used the correct API key?"
+            )
+        elif isinstance(e, HTTPError) and e.response.status_code == 404:
+            pprint(
+                "[blue][bold]Hint:[/bold] Are you sure you used the correct test case ID?"
+            )
 
 
 def add_upsert_command(subparsers: argparse._SubParsersAction):
@@ -244,8 +241,12 @@ def add_upsert_command(subparsers: argparse._SubParsersAction):
 def handle_upsert_command(args: argparse.Namespace):
     try:
         test_management_system = Factory.get_test_management_system(args.system)
-        operation = test_management_system.upsert_test_case(args.file, args.api_key)
-        pprint(f"[green]:heavy_check_mark: Successfully {operation.lower()} test case.")
+        operation, test_case_id = test_management_system.upsert_test_case(
+            args.file, args.api_key
+        )
+        pprint(
+            f"[green]:heavy_check_mark: Upsert command successful for test case with ID [yellow]`{test_case_id}`[/yellow]. Operation: [yellow]`{operation.name}`[/yellow]."
+        )
     except Exception as e:
         pprint(
             f"[red][bold][ERR][/bold] Failed to upsert test case. Reason:\n[dark_orange]{e}"
