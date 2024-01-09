@@ -12,6 +12,12 @@ BANNER = r"""
 
 
 def get_version():  # TODO: find a better way to get the version (maybe from setup.py)
+    """
+    Returns the version of the application.
+
+    Returns:
+        str: The version of the application.
+    """
     return "0.0.1"
 
 
