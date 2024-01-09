@@ -1,7 +1,5 @@
 import argparse
-import os
 from rich import print as pprint
-import toml
 
 BANNER = r"""
 ████████╗██╗   ██╗██████╗ ██████╗  ██████╗        ██████╗ █████╗ ███████╗███████╗
@@ -45,25 +43,25 @@ class CustomHelpFormatter(argparse.HelpFormatter):
         )
 
 
-# ! move to main
-def handle_setup(api_key: str):
-    file_path = os.path.join(
-        os.path.expanduser("~"), ".config", "turbocase", "settings.toml"
-    )
-    if not os.path.isfile(file_path):
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        with open(file_path, "w", encoding="UTF-8") as file:
-            toml.dump(
-                {
-                    "test_management_system": {
-                        "default": "Testiny",
-                    },
-                    "api": {
-                        "key": api_key,
-                    },
-                    "user": {  # ! issue: uncouple with Testiny class
-                        "ID": Testiny.get_user_id(api_key),
-                    },
-                },
-                file,
-            )
+# # ! move to main
+# def handle_setup(api_key: str):
+#     file_path = os.path.join(
+#         os.path.expanduser("~"), ".config", "turbocase", "settings.toml"
+#     )
+#     if not os.path.isfile(file_path):
+#         os.makedirs(os.path.dirname(file_path), exist_ok=True)
+#         with open(file_path, "w", encoding="UTF-8") as file:
+#             toml.dump(
+#                 {
+#                     "test_management_system": {
+#                         "default": "Testiny",
+#                     },
+#                     "api": {
+#                         "key": api_key,
+#                     },
+#                     "user": {  # ! issue: uncouple with Testiny class
+#                         "ID": Testiny.get_user_id(api_key),
+#                     },
+#                 },
+#                 file,
+#             )
