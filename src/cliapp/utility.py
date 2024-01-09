@@ -1,6 +1,6 @@
-from rich import print as pprint
 import argparse
 import os
+from rich import print as pprint
 import toml
 
 BANNER = r"""
@@ -32,7 +32,10 @@ def print_banner():
 
 
 class CustomHelpFormatter(argparse.HelpFormatter):
+    """Custom help formatter for the command-line interface."""
+
     def format_help(self) -> str:
+        """Format the help message with custom styling."""
         return (
             super()
             .format_help()
@@ -49,7 +52,7 @@ def handle_setup(api_key: str):
     )
     if not os.path.isfile(file_path):
         os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        with open(file_path, "w") as file:
+        with open(file_path, "w", encoding="UTF-8") as file:
             toml.dump(
                 {
                     "test_management_system": {
