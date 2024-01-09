@@ -18,30 +18,26 @@ class InvalidTestManagementSystemError(Exception):
         super().__init__(message)
 
 
-class Factory:
+TEST_MANAGEMENT_SYSTEMS = {
+    "Testiny": Testiny,
+}
+
+
+@staticmethod
+def get_test_management_system(system_name: str) -> TestManagementSystem:
     """
-    Factory class for creating instances of different test management systems.
+    Factory method to get an instance of the specified test management system.
+
+    Args:
+        system_name (str): The name of the test management system.
+
+    Returns:
+        TestManagementSystem: An instance of the specified test management system.
+
+    Raises:
+        InvalidTestManagementSystemError: If the specified test management system
+            is not supported.
     """
-
-    __SYSTEMS = {
-        "Testiny": Testiny,
-    }
-
-    @staticmethod
-    def get_test_management_system(system_name: str) -> TestManagementSystem:
-        """
-        Get an instance of the specified test management system.
-
-        Args:
-            system_name (str): The name of the test management system.
-
-        Returns:
-            TestManagementSystem: An instance of the specified test management system.
-
-        Raises:
-            InvalidTestManagementSystemError: If the specified test management system
-                is not supported.
-        """
-        if system_name not in Factory.__SYSTEMS:
-            raise InvalidTestManagementSystemError(system_name)
-        return Factory.__SYSTEMS[system_name]()
+    if system_name not in TEST_MANAGEMENT_SYSTEMS:
+        raise InvalidTestManagementSystemError(system_name)
+    return TEST_MANAGEMENT_SYSTEMS[system_name]()
