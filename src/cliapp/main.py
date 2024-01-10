@@ -1,6 +1,6 @@
 import argparse
 import utility
-from TestManagementSystems.Factory import Factory
+from TestManagementSystems.Factory import get_test_management_system
 from rich import print as pprint
 from requests.exceptions import HTTPError
 
@@ -113,7 +113,7 @@ def handle_create_command(args: argparse.Namespace):
     Returns:
         None
     """
-    test_management_system = Factory.get_test_management_system(args.system)
+    test_management_system = get_test_management_system(args.system)
     created_files_n = 0
     for file_path in args.files:
         try:
@@ -185,7 +185,7 @@ def handle_update_command(args: argparse.Namespace):
         None
     """
     try:
-        test_management_system = Factory.get_test_management_system(args.system)
+        test_management_system = get_test_management_system(args.system)
         test_management_system.update_test_case(args.file, args.api_key, args.id)
         pprint(
             f"[green]{SUCCESS_PREFIX} Successfully updated test case with ID: "
@@ -245,7 +245,7 @@ def handle_read_command(args: argparse.Namespace):
         None
     """
     try:
-        test_management_system = Factory.get_test_management_system(args.system)
+        test_management_system = get_test_management_system(args.system)
         test_case_info = test_management_system.read_test_case(args.api_key, args.id)
         pprint(test_case_info)
     except Exception as e:
@@ -305,7 +305,7 @@ def handle_upsert_command(args: argparse.Namespace):
         None
     """
     try:
-        test_management_system = Factory.get_test_management_system(args.system)
+        test_management_system = get_test_management_system(args.system)
         operation, test_case_id = test_management_system.upsert_test_case(
             args.file, args.api_key
         )
