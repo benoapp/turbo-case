@@ -21,6 +21,13 @@ class Testiny(TestManagementSystem):
     )  # TODO: write this in a better (safer) way
 
     @staticmethod
+    def init_config(api_key: str):
+        file_content = f"API_KEY = {api_key}\nUser_ID = {Testiny.__get_owner_id(api_key)}"
+
+        with open("init", "w") as file:
+            file.write(file_content)
+
+    @staticmethod
     def __get_owner_id(api_key: str) -> int:
         url = "https://app.testiny.io/api/v1/account/me"
         headers = {
