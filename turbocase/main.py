@@ -322,6 +322,51 @@ def handle_upsert_command(args: argparse.Namespace):
             pprint(ERROR_403_HINT)
 
 
+def add_init_command(subparsers: argparse._SubParsersAction):
+    """
+    Add the 'init' command to the subparsers.
+
+    Args:
+        subparsers (argparse._SubParsersAction): The subparsers object to add the command to.
+    """
+    upsert_parser = subparsers.add_parser(
+        "init",
+        help="Create init file",
+        description="Create init file with api key and user id",
+        add_help=False,
+        formatter_class=utility.CustomHelpFormatter,
+    )
+
+    # upsert_parser.add_argument(
+    #     "file",
+    #     help="Path of (YAML) test file",
+    #     metavar="<file>",
+    # )
+
+    upsert_parser.add_argument(
+        "-h",
+        "--help",
+        action="help",
+        help=HELP_MESSAGE,
+    )
+
+
+def handle_init_command(args: argparse.Namespace):
+    """
+    Handles the upsert command by calling the appropriate test management system's
+    upsert_test_case method with the provided arguments.
+
+    Args:
+        args (argparse.Namespace): The parsed command-line arguments.
+
+    Returns:
+        None
+    """
+    test_management_system = get_test_management_system(args.system)
+    test_management_system.init_config(args.api_key)
+
+
+
 def parse_args(parser: argparse.ArgumentParser):
     """
     Parse the command line arguments and execute the corresponding command.
@@ -349,6 +394,8 @@ def parse_args(parser: argparse.ArgumentParser):
 
     elif args.selected_command == "upsert":
         handle_upsert_command(args)
+    elif args.selected_command == "init":
+        handle_init_command(args)
 
 
 def main():
@@ -363,6 +410,8 @@ def main():
     add_read_command(subparsers)
 
     add_upsert_command(subparsers)
+
+    add_init_command(subparsers)
 
     parse_args(parser)
 
