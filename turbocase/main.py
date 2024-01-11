@@ -1,8 +1,8 @@
 import argparse
-import utility
-from TestManagementSystems.Factory import get_test_management_system
 from rich import print as pprint
 from requests.exceptions import HTTPError
+from .TestManagementSystems.Factory import get_test_management_system
+from .utility import get_version, print_banner, CustomHelpFormatter
 
 HELP_MESSAGE = "Show help"
 SUCCESS_PREFIX = ":heavy_check_mark:"
@@ -21,7 +21,7 @@ def create_main_and_sub_parsers():
         prog="turbocase",
         description="Turbo-Case: a helper CLI App that enables manual-test-as-code",
         add_help=False,
-        formatter_class=utility.CustomHelpFormatter,
+        formatter_class=CustomHelpFormatter,
     )
 
     subparsers = parser.add_subparsers(
@@ -68,7 +68,7 @@ def add_global_options(parser: argparse.ArgumentParser):
     parser.add_argument(
         "--version",
         action="version",
-        version=f"%(prog)s v{utility.get_version()}",
+        version=f"%(prog)s v{get_version()}",
         help="Show program's version",
     )
 
@@ -85,7 +85,7 @@ def add_create_command(subparsers: argparse._SubParsersAction):
         help="Create test cases from YAML files",
         description="Create test cases from YAML files",
         add_help=False,
-        formatter_class=utility.CustomHelpFormatter,
+        formatter_class=CustomHelpFormatter,
     )
 
     create_parser.add_argument(
@@ -148,7 +148,7 @@ def add_update_command(subparsers: argparse._SubParsersAction):
         help="Overwrite existing test cases (based on ID matching)",
         description="Overwrite existing test cases (based on ID matching)",
         add_help=False,
-        formatter_class=utility.CustomHelpFormatter,
+        formatter_class=CustomHelpFormatter,
     )
 
     update_parser.add_argument(
@@ -214,7 +214,7 @@ def add_read_command(subparsers: argparse._SubParsersAction):
         help="Read existing test cases (search by ID)",
         description="Read existing test cases (search by ID)",
         add_help=False,
-        formatter_class=utility.CustomHelpFormatter,
+        formatter_class=CustomHelpFormatter,
     )
 
     read_parser.add_argument(
@@ -276,7 +276,7 @@ def add_upsert_command(subparsers: argparse._SubParsersAction):
         help="Create a new test case or update an existing one (based on Title matching)",
         description="Create a new test case or update an existing one (based on Title matching)",
         add_help=False,
-        formatter_class=utility.CustomHelpFormatter,
+        formatter_class=CustomHelpFormatter,
     )
 
     upsert_parser.add_argument(
@@ -336,7 +336,7 @@ def parse_args(parser: argparse.ArgumentParser):
     args = parser.parse_args()
 
     if args.selected_command is None:
-        utility.print_banner()
+        print_banner()
         parser.print_help()
 
     elif args.selected_command == "create":

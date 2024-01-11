@@ -6,8 +6,8 @@ import requests
 import yaml
 import jsonschema
 from overrides import override
-from TestManagementSystems.TestManagementSystem import TestManagementSystem
-from TestManagementSystems.TestManagementSystem import UpsertAction
+from .TestManagementSystem import TestManagementSystem
+from .TestManagementSystem import UpsertAction
 
 
 class Testiny(TestManagementSystem):

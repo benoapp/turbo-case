@@ -1,10 +1,11 @@
-from TestManagementSystems.Testiny import Testiny
-from TestManagementSystems.TestManagementSystem import TestManagementSystem
+from .Testiny import Testiny
+from .TestManagementSystem import TestManagementSystem
 
 
 TEST_MANAGEMENT_SYSTEMS = {
     "Testiny": Testiny,
 }
+
 
 class InvalidTestManagementSystemError(Exception):
     """
@@ -20,7 +21,6 @@ class InvalidTestManagementSystemError(Exception):
         if message is None:
             message = f"Test management system '{system_name}' is not supported."
         super().__init__(message)
-
 
 
 @staticmethod
