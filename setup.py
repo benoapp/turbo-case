@@ -1,5 +1,7 @@
 from setuptools import setup, find_packages
 
+__version__ = "1.0.0"
+
 with open("requirements.txt", "r", encoding="UTF-8") as file:
     requirements = [line.strip() for line in file.readlines()]
 
@@ -9,7 +11,7 @@ with open("README.md", "r", encoding="UTF-8") as file:
 
 setup(
     name="turbocase",
-    version="0.0.1",
+    version=__version__,
     python_requires=">=3.6",
     url="https://github.com/benoapp/turbo-case",
     author="Ahmad Alsaleh",
