@@ -8,6 +8,12 @@ from .__init__ import __version__
 HELP_MESSAGE = "Show help"
 SUCCESS_PREFIX = ":heavy_check_mark:"
 FAILURE_PREFIX = "[bold][ERR][/bold]"
+HINT_PREFIX = "[blue][bold]Hint:[/bold]"
+ERROR_404_HINT = f"{HINT_PREFIX} Are you sure you used the correct test case ID?"
+ERROR_403_HINT = (
+    f"{HINT_PREFIX} Are you sure you used the correct API key?\n"
+    f"{HINT_PREFIX} Are you sure the project ID in the test case file is accurate?"
+)
 
 
 def create_main_and_sub_parsers():
@@ -198,9 +204,7 @@ def handle_update_command(args: argparse.Namespace):
             f"[yellow]`{args.id}`[/yellow]. Reason:\n[dark_orange]{e}"
         )
         if isinstance(e, HTTPError) and e.response.status_code == 404:
-            pprint(
-                "[blue][bold]Hint:[/bold] Are you sure you used the correct test case ID?"
-            )
+            pprint(ERROR_404_HINT)
 
 
 def add_read_command(subparsers: argparse._SubParsersAction):
@@ -256,13 +260,9 @@ def handle_read_command(args: argparse.Namespace):
         )
         if isinstance(e, HTTPError):
             if e.response.status_code == 403:
-                pprint(
-                    "[blue][bold]Hint:[/bold] Are you sure you used the correct API key?"
-                )
+                pprint(ERROR_403_HINT)
             elif e.response.status_code == 404:
-                pprint(
-                    "[blue][bold]Hint:[/bold] Are you sure you used the correct test case ID?"
-                )
+                pprint(ERROR_404_HINT)
 
 
 def add_upsert_command(subparsers: argparse._SubParsersAction):
@@ -319,9 +319,7 @@ def handle_upsert_command(args: argparse.Namespace):
             f"[red]{FAILURE_PREFIX} Failed to upsert test case. Reason:\n[dark_orange]{e}"
         )
         if isinstance(e, HTTPError) and e.response.status_code == 403:
-            pprint(
-                "[blue][bold]Hint:[/bold] Are you sure you used the correct API key?"
-            )
+            pprint(ERROR_403_HINT)
 
 
 def parse_args(parser: argparse.ArgumentParser):
