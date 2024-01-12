@@ -2,7 +2,8 @@ import argparse
 from rich import print as pprint
 from requests.exceptions import HTTPError
 from .TestManagementSystems.Factory import get_test_management_system
-from .utility import get_version, print_banner, CustomHelpFormatter
+from .utility import print_banner, CustomHelpFormatter
+from .__init__ import __version__
 
 HELP_MESSAGE = "Show help"
 SUCCESS_PREFIX = ":heavy_check_mark:"
@@ -68,7 +69,7 @@ def add_global_options(parser: argparse.ArgumentParser):
     parser.add_argument(
         "--version",
         action="version",
-        version=f"%(prog)s v{get_version()}",
+        version=f"%(prog)s v{__version__}",
         help="Show program's version",
     )
 

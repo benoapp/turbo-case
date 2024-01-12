@@ -1,6 +1,5 @@
 from setuptools import setup, find_packages
-
-__version__ = "1.0.0"
+from turbocase.__init__ import __version__
 
 with open("requirements.txt", "r", encoding="UTF-8") as file:
     requirements = [line.strip() for line in file.readlines()]

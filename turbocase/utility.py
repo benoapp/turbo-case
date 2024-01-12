@@ -1,5 +1,6 @@
 import argparse
 from rich import print as pprint
+from .__init__ import __version__
 
 BANNER = r"""
 ████████╗██╗   ██╗██████╗ ██████╗  ██████╗        ██████╗ █████╗ ███████╗███████╗
@@ -11,19 +12,9 @@ BANNER = r"""
 """
 
 
-def get_version():  # TODO: find a better way to get the version (maybe from setup.py)
-    """
-    Returns the version of the application.
-
-    Returns:
-        str: The version of the application.
-    """
-    return "0.0.1"
-
-
 def print_banner():
     """Print banner and version"""
-    msg1_raw = get_version()
+    msg1_raw = __version__
     msg2_raw = "made with :white_heart: by @Ahmad-Alsaleh"
 
     full_msg_raw = f"{msg1_raw} - {msg2_raw}"
@@ -47,27 +38,3 @@ class CustomHelpFormatter(argparse.HelpFormatter):
             .replace("options:", "Options:")
             .replace("positional arguments:", "Arguments:")
         )
-
-
-# # ! move to main
-# def handle_setup(api_key: str):
-#     file_path = os.path.join(
-#         os.path.expanduser("~"), ".config", "turbocase", "settings.toml"
-#     )
-#     if not os.path.isfile(file_path):
-#         os.makedirs(os.path.dirname(file_path), exist_ok=True)
-#         with open(file_path, "w", encoding="UTF-8") as file:
-#             toml.dump(
-#                 {
-#                     "test_management_system": {
-#                         "default": "Testiny",
-#                     },
-#                     "api": {
-#                         "key": api_key,
-#                     },
-#                     "user": {  # ! issue: uncouple with Testiny class
-#                         "ID": Testiny.get_user_id(api_key),
-#                     },
-#                 },
-#                 file,
-#             )
