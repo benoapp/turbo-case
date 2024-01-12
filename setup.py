@@ -20,6 +20,8 @@ setup(
     long_description_content_type="text/markdown",
     install_requires=requirements,
     packages=find_packages(),
+    include_package_data=True,
+    package_data={"TestManagementSystems": ["Testiny_schema.json"]},
     entry_points={
         "console_scripts": [
             "turbocase = turbocase.main:main",
