@@ -1,9 +1,9 @@
 import argparse
 from rich import print as pprint
 from requests.exceptions import HTTPError
-from .TestManagementSystems.Factory import get_test_management_system
 from .utility import print_banner, CustomHelpFormatter
 from .__init__ import __version__
+from .Testiny import Testiny
 
 HELP_MESSAGE = "Show help"
 SUCCESS_PREFIX = ":heavy_check_mark:"
@@ -120,13 +120,10 @@ def handle_create_command(args: argparse.Namespace):
     Returns:
         None
     """
-    test_management_system = get_test_management_system(args.system)
     created_files_n = 0
     for file_path in args.files:
         try:
-            test_case_id = test_management_system.create_test_case(
-                file_path, args.api_key
-            )
+            test_case_id = Testiny.create_test_case(file_path)
             pprint(
                 f"[green]{SUCCESS_PREFIX} Successfully created test case "
                 f"[yellow]`{test_case_id}`[/yellow] from file: [yellow]`{file_path}`[/yellow]."
@@ -192,8 +189,7 @@ def handle_update_command(args: argparse.Namespace):
         None
     """
     try:
-        test_management_system = get_test_management_system(args.system)
-        test_management_system.update_test_case(args.file, args.api_key, args.id)
+        Testiny.update_test_case(args.file, args.id)
         pprint(
             f"[green]{SUCCESS_PREFIX} Successfully updated test case with ID: "
             f"[yellow]`{args.id}`[/yellow]."
@@ -250,8 +246,7 @@ def handle_read_command(args: argparse.Namespace):
         None
     """
     try:
-        test_management_system = get_test_management_system(args.system)
-        test_case_info = test_management_system.read_test_case(args.api_key, args.id)
+        test_case_info = Testiny.read_test_case(args.id)
         pprint(test_case_info)
     except Exception as e:
         pprint(
