@@ -3,7 +3,7 @@ import toml
 import os
 from rich import print as pprint
 from requests.exceptions import HTTPError
-from .utility import print_banner, CustomHelpFormatter
+from .utility import print_banner, CustomHelpFormatter, CONFIG_FILE_PATH
 from .__init__ import __version__
 from .Testiny import Testiny
 
@@ -350,7 +350,7 @@ def handle_config_command(args: argparse.Namespace):
             "owner_user_id": Testiny.get_owner_user_id(args.api_key),
         }
 
-        with open(".turbocase.toml", "w") as config_file:
+        with open(CONFIG_FILE_PATH, "w") as config_file:
             toml.dump(configurations, config_file)
 
         pprint(
@@ -375,14 +375,14 @@ def parse_args(parser: argparse.ArgumentParser):
     """
     args = parser.parse_args()
 
-    if not os.path.exists(".turbocase.toml") and args.selected_command not in (
+    if not os.path.exists(CONFIG_FILE_PATH) and args.selected_command not in (
         "config",
         None,
     ):
         pprint(
             f"[red]{FAILURE_PREFIX} Configuration file not found. "
             f"Run [yellow]`turbocase config --api-key <YOUR_API_KEY>`[/yellow].\n"
-            f"See [yellow]`turbocase config --help/`[yellow] for more information."
+            f"See [yellow]`turbocase config --help`[/yellow] for more information."
         )
         exit(1)
 
