@@ -5,7 +5,7 @@ import requests
 import yaml
 import json
 import os
-from .utility import get_configurations
+from .utility import get_configuration
 
 
 class UpsertAction(Enum):
@@ -31,7 +31,6 @@ class Testiny:
         os.path.dirname(__file__), "testiny_schema.json"
     )  # .todo: write this in a better (safer) way
     __API_URL = "https://app.testiny.io/api/v1"
-    __CONFIG = get_configurations()
 
     @staticmethod
     def __read_test_case_file(file_path: str) -> Any:
@@ -92,7 +91,7 @@ class Testiny:
         headers = {
             "Content-Type": Testiny.__CONTENT_TYPE,
             "Accept": Testiny.__CONTENT_TYPE,
-            "X-Api-Key": Testiny.__CONFIG.get("api_key"),
+            "X-Api-Key": get_configuration("api_key"),
         }
 
         response = requests.request(
@@ -107,7 +106,7 @@ class Testiny:
         if meta["count"] > 1:
             raise ValueError(
                 "More than one test case found with the given title. "
-                "Please use the `update` command."
+                "Please use the [yellow]`update`[/yellow] command."
             )
 
         return data[0]["id"], data[0]["_etag"]
@@ -145,7 +144,7 @@ class Testiny:
         headers = {
             "Content-Type": Testiny.__CONTENT_TYPE,
             "Accept": Testiny.__CONTENT_TYPE,
-            "X-Api-Key": Testiny.__CONFIG.get("api_key"),
+            "X-Api-Key": get_configuration("api_key"),
         }
 
         payload = json.dumps(
@@ -156,7 +155,7 @@ class Testiny:
                 "expected_result_text": "\n".join(data["expected results"]),
                 "project_id": data["project id"],
                 "template": "TEXT",
-                "owner_user_id": Testiny.__CONFIG.getint("owner_user_id"),
+                "owner_user_id": get_configuration("owner_user_id"),
             }
         )
 
@@ -187,7 +186,7 @@ class Testiny:
         headers = {
             "Content-Type": Testiny.__CONTENT_TYPE,
             "Accept": Testiny.__CONTENT_TYPE,
-            "X-Api-Key": Testiny.__CONFIG.get("api_key"),
+            "X-Api-Key": get_configuration("api_key"),
         }
 
         payload = json.dumps(
@@ -198,7 +197,7 @@ class Testiny:
                 "expected_result_text": "\n".join(data["expected results"]),
                 "project_id": data["project id"],
                 "template": "TEXT",
-                "owner_user_id": Testiny.__CONFIG.getint("owner_user_id"),
+                "owner_user_id": get_configuration("owner_user_id"),
                 "_etag": _etag
                 if _etag is not None
                 else Testiny.__get_etag(test_case_id),
@@ -225,7 +224,7 @@ class Testiny:
         url = os.path.join(Testiny.__API_URL, "testcase", str(test_case_id))
         headers = {
             "Accept": Testiny.__CONTENT_TYPE,
-            "X-Api-Key": Testiny.__CONFIG.get("api_key"),
+            "X-Api-Key": get_configuration("api_key"),
         }
 
         response = requests.request("GET", url, headers=headers, timeout=10)

@@ -1,4 +1,6 @@
 import argparse
+import toml
+import os
 from rich import print as pprint
 from requests.exceptions import HTTPError
 from .utility import print_banner, CustomHelpFormatter
@@ -48,22 +50,6 @@ def add_global_options(parser: argparse.ArgumentParser):
     Args:
         parser (argparse.ArgumentParser): The main argument parser to add options to.
     """
-    parser.add_argument(
-        "-k",
-        "--api-key",
-        required=True,
-        metavar="<key>",
-        help="API key",
-    )
-
-    parser.add_argument(
-        "-s",
-        "--system",
-        default="Testiny",
-        help="Test management system. Default: Testiny. Options: Testiny",
-        metavar="<system>",
-        choices=["Testiny"],
-    )
 
     parser.add_argument(
         "-h",
@@ -317,6 +303,66 @@ def handle_upsert_command(args: argparse.Namespace):
             pprint(ERROR_403_HINT)
 
 
+def add_config_command(subparsers: argparse._SubParsersAction):
+    """
+    Add the 'config' command to the subparsers.
+
+    Args:
+        subparsers (argparse._SubParsersAction): The subparsers object to add the command to.
+    """
+    config_parser = subparsers.add_parser(
+        "config",
+        help="Configure Turbo-Case",
+        description="Configure Turbo-Case",
+        add_help=False,
+        formatter_class=CustomHelpFormatter,
+    )
+
+    config_parser.add_argument(
+        "-k",
+        "--api-key",
+        required=True,
+        metavar="<key>",
+        help="Testiny API key",
+    )
+
+    config_parser.add_argument(
+        "-h",
+        "--help",
+        action="help",
+        help=HELP_MESSAGE,
+    )
+
+
+def handle_config_command(args: argparse.Namespace):
+    """
+    Handles the config command by configuring the Turbo-Case settings.
+
+    Args:
+        args (argparse.Namespace): The parsed command-line arguments.
+
+    Returns:
+        None
+    """
+    try:
+        configurations = {
+            "api_key": args.api_key,
+            "owner_user_id": Testiny.get_owner_user_id(args.api_key),
+        }
+
+        with open(".turbocase.toml", "w") as config_file:
+            toml.dump(configurations, config_file)
+
+        pprint(
+            f"[green]{SUCCESS_PREFIX} Successfully configured Turbo-Case.\n"
+            f"Run [yellow]`turbocase --help`[/yellow] for more information on how to use turbocase."
+        )
+    except Exception as e:
+        pprint(
+            f"[red]{FAILURE_PREFIX} Failed to configure Turbo-Case. Reason:\n[dark_orange]{e}"
+        )
+
+
 def parse_args(parser: argparse.ArgumentParser):
     """
     Parse the command line arguments and execute the corresponding command.
@@ -328,6 +374,17 @@ def parse_args(parser: argparse.ArgumentParser):
         None
     """
     args = parser.parse_args()
+
+    if not os.path.exists(".turbocase.toml") and args.selected_command not in (
+        "config",
+        None,
+    ):
+        pprint(
+            f"[red]{FAILURE_PREFIX} Configuration file not found. "
+            f"Run [yellow]`turbocase config --api-key <YOUR_API_KEY>`[/yellow].\n"
+            f"See [yellow]`turbocase config --help/`[yellow] for more information."
+        )
+        exit(1)
 
     if args.selected_command is None:
         print_banner()
@@ -345,6 +402,9 @@ def parse_args(parser: argparse.ArgumentParser):
     elif args.selected_command == "upsert":
         handle_upsert_command(args)
 
+    elif args.selected_command == "config":
+        handle_config_command(args)
+
 
 def main():
     parser, subparsers = create_main_and_sub_parsers()
@@ -358,6 +418,8 @@ def main():
     add_read_command(subparsers)
 
     add_upsert_command(subparsers)
+
+    add_config_command(subparsers)
 
     parse_args(parser)
 

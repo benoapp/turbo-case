@@ -1,12 +1,11 @@
 node_modules/
 package-lock.json
 package.json
-bin/
 .DS_Store
 .vscode/
 temp/
 TODO.md
-init
+.turbocase.toml
 
 ### The following is a template obtained from https://github.com/github/gitignore/blob/main/Python.gitignore
 # Byte-compiled / optimized / DLL files

@@ -1,5 +1,7 @@
 import argparse
+from typing import Any
 from rich import print as pprint
+import toml
 from .__init__ import __version__
 
 BANNER = r"""
@@ -38,3 +40,29 @@ class CustomHelpFormatter(argparse.HelpFormatter):
             .replace("options:", "Options:")
             .replace("positional arguments:", "Arguments:")
         )
+
+
+def get_configuration(configuration_name: str) -> Any:
+    """
+    Retrieve the value of a configuration from the .turbocase.toml file.
+
+    Args:
+        configuration_name (str): The name of the configuration to retrieve.
+
+    Returns:
+        Any: The value of the configuration.
+
+    Raises:
+        KeyError: If the configuration does not exist in the file.
+            This can happen if the file is corrupted.
+    """
+    with open(".turbocase.toml", "r", encoding="utf-8") as config_file:
+        configurations = toml.load(config_file)
+        try:
+            return configurations[configuration_name]
+        except KeyError:
+            raise KeyError(
+                "Config file is corrupted. "
+                "Run [yellow]`turbocase config --api-key <YOUR_API_KEY>`[/yellow] to fix it.\n"
+                "See [yellow]`turbocase config --help`[/yellow] for more information."
+            )
