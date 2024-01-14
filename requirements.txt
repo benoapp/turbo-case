@@ -1,6 +1,6 @@
-jsonschema==4.20.0
-overrides==7.4.0
-PyYAML==6.0.1
-PyYAML==6.0.1
-Requests==2.31.0
-rich==13.7.0
+jsonschema>=4.20.0
+PyYAML>=6.0.1
+PyYAML>=6.0.1
+Requests>=2.31.0
+rich>=13.7.0
+toml>=0.10.2
