@@ -6,6 +6,7 @@ package.json
 temp/
 TODO.md
 .turbocase.toml
+docs/BDD-Introduction.md
 
 ### The following is a template obtained from https://github.com/github/gitignore/blob/main/Python.gitignore
 # Byte-compiled / optimized / DLL files
