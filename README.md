@@ -38,6 +38,33 @@ Next, configure `turbocase` by running the following:
 ```shell
 turbocase config --api-key <YOUR_TESTINY_API_KEY>
 ```
+## Setup
+
+1. Structure your test management folder to look like this:
+```shell
+.
+├── _config.yaml
+└── app
+    ├── mobile-app
+    │   ├── android
+    │   │   └── android-only.yaml
+    │   └── iOS
+    │       └── ios-only.yaml
+    ├── new-test.yaml
+    └── web-app
+        └── only-web.yaml
+```
+
+> Focus on creating `_config.yaml` and the directories. The other Yamls are just for demonstration
+> We will add a `init` command later
+
+2. Map your Testiny projects in the `_config.yaml`
+```yaml
+Application: My App # decorative (optional)
+web-app: 1
+ios-app: 7
+android-app: 14
+```
 
 You can generate an API key using your corresponding tool: [Testiny](https://app.testiny.io/settings/apikeys)
 ## Setup
