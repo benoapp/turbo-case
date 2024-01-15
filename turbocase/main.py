@@ -1,5 +1,5 @@
 import argparse
-from rich_argparse import RichHelpFormatter
+from rich_argparse import RichHelpFormatter, HelpPreviewAction
 import toml
 import os
 from rich.console import Console
@@ -37,6 +37,13 @@ def create_main_and_sub_parsers():
         dest="selected_command",
         metavar="<command>",
         help="Use `%(prog)s <command> --help` for more information",
+    )
+
+    # this action is hidden from the help message
+    parser.add_argument(
+        "--generate-turbocase-preview",
+        action=HelpPreviewAction,
+        path="assets/turbocase-preview.svg",
     )
 
     return parser, subparsers
