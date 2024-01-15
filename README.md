@@ -39,9 +39,44 @@ Next, configure `turbocase` by running the following:
 turbocase config --api-key <YOUR_TESTINY_API_KEY>
 ```
 
+You can generate an API key using your corresponding tool: [Testiny](https://app.testiny.io/settings/apikeys)
+## Setup
+
+1. Structure your test management folder to look like this:
+```shell
+.
+├── _config.yaml
+└── app
+    ├── mobile-app
+    │   ├── android
+    │   │   └── android-only.yaml
+    │   └── iOS
+    │       └── ios-only.yaml
+    ├── new-test.yaml
+    └── web-app
+        └── only-web.yaml
+```
+
+> Focus on creating `_config.yaml` and the directories. The other Yamls are just for demonstration
+> We will add a `init` command later
+
+2. Map your Testiny projects in the `_config.yaml`
+```yaml
+Application: My App # decorative (optional)
+web-app: 1
+ios-app: 7
+android-app: 14
+```
+
 ## Usage
 
-### Creating a YAML test file
+### Generating a test file
+
+```shell
+turbocase generate testcase [app|web|mobile|android|ios] "Title of Test Case"
+```
+
+### Edit the YAML test file
 
 The YAML file should contain `title`, `preconditions`, `steps`, `expected results`, and `project id` (case sensitive), as in the following example:
 
@@ -56,7 +91,6 @@ steps:
     - Click on pay
 expected results:
     - Success
-project id: 1
 ```
 
 ### Uploading test case to Testiny
