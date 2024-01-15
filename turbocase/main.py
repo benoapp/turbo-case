@@ -1,21 +1,20 @@
 import argparse
+from rich_argparse import RichHelpFormatter
 import toml
 import os
-from rich import print as pprint
-from requests.exceptions import HTTPError
-from .utility import print_banner, CustomHelpFormatter, CONFIG_FILE_PATH
+from rich.console import Console
+from .utility import get_banner, print_error_hints, CONFIG_FILE_PATH
 from .__init__ import __version__
 from .Testiny import Testiny
 
 HELP_MESSAGE = "Show help"
 SUCCESS_PREFIX = ":heavy_check_mark:"
 FAILURE_PREFIX = "[bold][ERR][/bold]"
-HINT_PREFIX = "[blue][bold]Hint:[/bold]"
-ERROR_404_HINT = f"{HINT_PREFIX} Are you sure you used the correct test case ID?"
-ERROR_403_HINT = (
-    f"{HINT_PREFIX} Are you sure you used the correct API key?\n"
-    f"{HINT_PREFIX} Are you sure the project ID in the test case file is accurate?"
-)
+
+# change style of `back tick quoted text` in help messages
+RichHelpFormatter.styles["argparse.syntax"] = "bold yellow"
+
+RichHelpFormatter.styles["argparse.prog"] = "bold yellow"
 
 
 def create_main_and_sub_parsers():
@@ -30,14 +29,14 @@ def create_main_and_sub_parsers():
         prog="turbocase",
         description="Turbo-Case: a helper CLI App that enables manual-test-as-code",
         add_help=False,
-        formatter_class=CustomHelpFormatter,
+        formatter_class=RichHelpFormatter,
     )
 
     subparsers = parser.add_subparsers(
         title="Commands",
         dest="selected_command",
         metavar="<command>",
-        help="Use '%(prog)s <command> --help' for more information",
+        help="Use `%(prog)s <command> --help` for more information",
     )
 
     return parser, subparsers
@@ -61,7 +60,7 @@ def add_global_options(parser: argparse.ArgumentParser):
     parser.add_argument(
         "--version",
         action="version",
-        version=f"%(prog)s v{__version__}",
+        version=f"[yellow]%(prog)s [cyan]v{__version__}",
         help="Show program's version",
     )
 
@@ -78,7 +77,7 @@ def add_create_command(subparsers: argparse._SubParsersAction):
         help="Create test cases from YAML files",
         description="Create test cases from YAML files",
         add_help=False,
-        formatter_class=CustomHelpFormatter,
+        formatter_class=RichHelpFormatter,
     )
 
     create_parser.add_argument(
@@ -96,7 +95,7 @@ def add_create_command(subparsers: argparse._SubParsersAction):
     )
 
 
-def handle_create_command(args: argparse.Namespace):
+def handle_create_command(args: argparse.Namespace, *, console: Console):
     """
     Handles the 'create' command by creating test cases using the specified test management system.
 
@@ -108,20 +107,24 @@ def handle_create_command(args: argparse.Namespace):
     """
     created_files_n = 0
     for file_path in args.files:
+        console.rule(f"[cyan]Test Case File: [yellow]`{file_path}`[/yellow]")
         try:
             test_case_id = Testiny.create_test_case(file_path)
-            pprint(
+            console.print(
                 f"[green]{SUCCESS_PREFIX} Successfully created test case "
-                f"[yellow]`{test_case_id}`[/yellow] from file: [yellow]`{file_path}`[/yellow]."
+                f"with ID [yellow]`{test_case_id}`[/yellow]."
             )
             created_files_n += 1
         except Exception as e:
-            pprint(
+            console.print(
                 f"[red]{FAILURE_PREFIX} Failed to create test case from file: "
                 f"[yellow]`{file_path}`[/yellow]. Reason:\n[dark_orange]{e}"
             )
+            print_error_hints(e, console=console)
+        console.print()  # cosmetic
     if len(args.files) > 1:
-        pprint(
+        console.print("[cyan]Done")
+        console.print(
             f"[green]Created [cyan]{created_files_n}/{len(args.files)}[/cyan] test cases."
         )
 
@@ -138,7 +141,7 @@ def add_update_command(subparsers: argparse._SubParsersAction):
         help="Overwrite existing test cases (based on ID matching)",
         description="Overwrite existing test cases (based on ID matching)",
         add_help=False,
-        formatter_class=CustomHelpFormatter,
+        formatter_class=RichHelpFormatter,
     )
 
     update_parser.add_argument(
@@ -164,7 +167,7 @@ def add_update_command(subparsers: argparse._SubParsersAction):
     )
 
 
-def handle_update_command(args: argparse.Namespace):
+def handle_update_command(args: argparse.Namespace, *, console: Console):
     """
     Handles the 'update' command by updating a test case in the test management system.
 
@@ -176,17 +179,16 @@ def handle_update_command(args: argparse.Namespace):
     """
     try:
         Testiny.update_test_case(args.file, args.id)
-        pprint(
+        console.print(
             f"[green]{SUCCESS_PREFIX} Successfully updated test case with ID: "
             f"[yellow]`{args.id}`[/yellow]."
         )
     except Exception as e:
-        pprint(
+        console.print(
             f"[red]{FAILURE_PREFIX} Failed to update test case with ID: "
             f"[yellow]`{args.id}`[/yellow]. Reason:\n[dark_orange]{e}"
         )
-        if isinstance(e, HTTPError) and e.response.status_code == 404:
-            pprint(ERROR_404_HINT)
+        print_error_hints(e, console=console)
 
 
 def add_read_command(subparsers: argparse._SubParsersAction):
@@ -201,7 +203,7 @@ def add_read_command(subparsers: argparse._SubParsersAction):
         help="Read existing test cases (search by ID)",
         description="Read existing test cases (search by ID)",
         add_help=False,
-        formatter_class=CustomHelpFormatter,
+        formatter_class=RichHelpFormatter,
     )
 
     read_parser.add_argument(
@@ -221,7 +223,7 @@ def add_read_command(subparsers: argparse._SubParsersAction):
     )
 
 
-def handle_read_command(args: argparse.Namespace):
+def handle_read_command(args: argparse.Namespace, *, console: Console):
     """
     Handles the 'read' command by retrieving and printing information about a test case.
 
@@ -233,17 +235,13 @@ def handle_read_command(args: argparse.Namespace):
     """
     try:
         test_case_info = Testiny.read_test_case(args.id)
-        pprint(test_case_info)
+        console.print(test_case_info)
     except Exception as e:
-        pprint(
+        console.print(
             f"[red]{FAILURE_PREFIX} Failed to read test case with ID: "
             f"[yellow]`{args.id}`[/yellow]. Reason:\n[dark_orange]{e}"
         )
-        if isinstance(e, HTTPError):
-            if e.response.status_code == 403:
-                pprint(ERROR_403_HINT)
-            elif e.response.status_code == 404:
-                pprint(ERROR_404_HINT)
+        print_error_hints(e, console=console)
 
 
 def add_upsert_command(subparsers: argparse._SubParsersAction):
@@ -258,7 +256,7 @@ def add_upsert_command(subparsers: argparse._SubParsersAction):
         help="Create a new test case or update an existing one (based on Title matching)",
         description="Create a new test case or update an existing one (based on Title matching)",
         add_help=False,
-        formatter_class=CustomHelpFormatter,
+        formatter_class=RichHelpFormatter,
     )
 
     upsert_parser.add_argument(
@@ -275,7 +273,7 @@ def add_upsert_command(subparsers: argparse._SubParsersAction):
     )
 
 
-def handle_upsert_command(args: argparse.Namespace):
+def handle_upsert_command(args: argparse.Namespace, *, console: Console):
     """
     Handles the upsert command by calling the appropriate test management system's
     upsert_test_case method with the provided arguments.
@@ -287,20 +285,16 @@ def handle_upsert_command(args: argparse.Namespace):
         None
     """
     try:
-        test_management_system = get_test_management_system(args.system)
-        operation, test_case_id = test_management_system.upsert_test_case(
-            args.file, args.api_key
-        )
-        pprint(
+        operation, test_case_id = Testiny.upsert_test_case(args.file)
+        console.print(
             f"[green]{SUCCESS_PREFIX} Upsert successful for test case "
             f"[yellow]`{test_case_id}`[/yellow]. Operation: [yellow]`{operation.name}`[/yellow]."
         )
     except Exception as e:
-        pprint(
+        console.print(
             f"[red]{FAILURE_PREFIX} Failed to upsert test case. Reason:\n[dark_orange]{e}"
         )
-        if isinstance(e, HTTPError) and e.response.status_code == 403:
-            pprint(ERROR_403_HINT)
+        print_error_hints(e, console=console)
 
 
 def add_config_command(subparsers: argparse._SubParsersAction):
@@ -315,7 +309,7 @@ def add_config_command(subparsers: argparse._SubParsersAction):
         help="Configure Turbo-Case",
         description="Configure Turbo-Case",
         add_help=False,
-        formatter_class=CustomHelpFormatter,
+        formatter_class=RichHelpFormatter,
     )
 
     config_parser.add_argument(
@@ -334,7 +328,7 @@ def add_config_command(subparsers: argparse._SubParsersAction):
     )
 
 
-def handle_config_command(args: argparse.Namespace):
+def handle_config_command(args: argparse.Namespace, *, console: Console):
     """
     Handles the config command by configuring the Turbo-Case settings.
 
@@ -353,14 +347,15 @@ def handle_config_command(args: argparse.Namespace):
         with open(CONFIG_FILE_PATH, "w") as config_file:
             toml.dump(configurations, config_file)
 
-        pprint(
+        console.print(
             f"[green]{SUCCESS_PREFIX} Successfully configured Turbo-Case.\n"
             f"Run [yellow]`turbocase --help`[/yellow] for more information on how to use turbocase."
         )
     except Exception as e:
-        pprint(
+        console.print(
             f"[red]{FAILURE_PREFIX} Failed to configure Turbo-Case. Reason:\n[dark_orange]{e}"
         )
+        print_error_hints(e, console=console)
 
 
 def parse_args(parser: argparse.ArgumentParser):
@@ -374,12 +369,13 @@ def parse_args(parser: argparse.ArgumentParser):
         None
     """
     args = parser.parse_args()
+    console = Console()
 
     if not os.path.exists(CONFIG_FILE_PATH) and args.selected_command not in (
         "config",
         None,
     ):
-        pprint(
+        console.print(
             f"[red]{FAILURE_PREFIX} Configuration file not found. "
             f"Run [yellow]`turbocase config --api-key <YOUR_API_KEY>`[/yellow].\n"
             f"See [yellow]`turbocase config --help`[/yellow] for more information."
@@ -387,23 +383,30 @@ def parse_args(parser: argparse.ArgumentParser):
         exit(1)
 
     if args.selected_command is None:
-        print_banner()
-        parser.print_help()
+        console.print(get_banner())
+        console.print(
+            "[cyan]Run [yellow]`turbocase --help`[/yellow] for more information."
+        )
 
     elif args.selected_command == "create":
-        handle_create_command(args)
+        with console.status("[bold green]Creating test cases..."):
+            handle_create_command(args, console=console)
 
     elif args.selected_command == "read":
-        handle_read_command(args)
+        with console.status("[bold green]Reading test case..."):
+            handle_read_command(args, console=console)
 
     elif args.selected_command == "update":
-        handle_update_command(args)
+        with console.status("[bold green]Updating test case..."):
+            handle_update_command(args, console=console)
 
     elif args.selected_command == "upsert":
-        handle_upsert_command(args)
+        with console.status("[bold green]Upserting test case..."):
+            handle_upsert_command(args, console=console)
 
     elif args.selected_command == "config":
-        handle_config_command(args)
+        with console.status("[bold green]Configuring Turbo-Case..."):
+            handle_config_command(args, console=console)
 
 
 def main():

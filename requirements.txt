@@ -3,4 +3,5 @@ PyYAML>=6.0.1
 PyYAML>=6.0.1
 Requests>=2.31.0
 rich>=13.7.0
+rich_argparse>=1.4.0
 toml>=0.10.2
