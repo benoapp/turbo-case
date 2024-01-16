@@ -259,7 +259,7 @@ def add_upsert_command(subparsers: argparse._SubParsersAction):
         subparsers (argparse._SubParsersAction): The subparsers object to add the command to.
     """
     upsert_parser = subparsers.add_parser(
-        "upsert",
+        "sync",
         help="Create a new test case or update an existing one (based on Title matching)",
         description="Create a new test case or update an existing one (based on Title matching)",
         add_help=False,
@@ -291,12 +291,14 @@ def handle_upsert_command(args: argparse.Namespace, *, console: Console):
     Returns:
         None
     """
+
     try:
-        operation, test_case_id = Testiny.upsert_test_case(args.file)
-        console.print(
-            f"[green]{SUCCESS_PREFIX} Upsert successful for test case "
-            f"[yellow]`{test_case_id}`[/yellow]. Operation: [yellow]`{operation.name}`[/yellow]."
-        )
+        for file_path in args.files:
+            operation, test_case_id = Testiny.upsert_test_case(file_path)
+            console.print(
+                f"[green]{SUCCESS_PREFIX} Upsert successful for test case "
+                f"[yellow]`{test_case_id}`[/yellow]. Operation: [yellow]`{operation.name}`[/yellow]."
+            )
     except Exception as e:
         console.print(
             f"[red]{FAILURE_PREFIX} Failed to upsert test case. Reason:\n[dark_orange]{e}"
@@ -418,8 +420,9 @@ def parse_args(parser: argparse.ArgumentParser):
 
 def main():
     parser, subparsers = create_main_and_sub_parsers()
+    add_config_command(subparsers)
 
-    add_global_options(parser)
+    add_upsert_command(subparsers)
 
     add_create_command(subparsers)
 
@@ -427,9 +430,9 @@ def main():
 
     add_read_command(subparsers)
 
-    add_upsert_command(subparsers)
+    add_global_options(parser)
 
-    add_config_command(subparsers)
+    
 
     parse_args(parser)
 
