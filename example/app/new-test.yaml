@@ -1,0 +1,12 @@
+title: Payment Gateway Works
+preconditions:
+    - User logged in
+    - Cart is not empty
+steps:
+    - Click on checkout 
+    - Fill credit card information
+    - Click on pay
+expected results:
+    - Response indicate success
+    - Receive booking email
+project id: 2

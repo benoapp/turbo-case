@@ -1,0 +1,10 @@
+title: Even
+precondition:
+- checkout a deal
+steps:
+- press on split payment
+- fill default credit card
+- press on pay
+result:
+- success
+
