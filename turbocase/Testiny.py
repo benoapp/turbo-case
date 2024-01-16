@@ -1,5 +1,6 @@
 from typing import Any, Tuple
 from enum import Enum, auto
+from urllib.parse import urljoin
 import jsonschema
 import requests
 import yaml
@@ -30,7 +31,7 @@ class Testiny:
     __SCHEMA_FILE_PATH = os.path.join(
         os.path.dirname(__file__), "testiny_schema.json"
     )  # .todo: write this in a better (safer) way
-    __API_URL = "https://app.testiny.io/api/v1"
+    __API_URL = "https://app.testiny.io/api/v1/"
 
     @staticmethod
     def __read_test_case_file(file_path: str) -> Any:
@@ -86,7 +87,7 @@ class Testiny:
         Raises:
             ValueError: If more than one test case is found with the given title.
         """
-        url = os.path.join(Testiny.__API_URL, "testcase/find")
+        url = urljoin(Testiny.__API_URL, "testcase/find")
         payload = json.dumps({"filter": {"title": title}})
         headers = {
             "Content-Type": Testiny.__CONTENT_TYPE,
@@ -113,7 +114,7 @@ class Testiny:
 
     @staticmethod
     def get_owner_user_id(api_key: str) -> int:
-        url = os.path.join(Testiny.__API_URL, "account/me")
+        url = urljoin(Testiny.__API_URL, "account/me")
         headers = {
             "Accept": Testiny.__CONTENT_TYPE,
             "X-Api-Key": api_key,
@@ -137,7 +138,7 @@ class Testiny:
             int: The ID of the created test case
         """
 
-        url = os.path.join(Testiny.__API_URL, "testcase")
+        url = urljoin(Testiny.__API_URL, "testcase")
 
         data = Testiny.__read_test_case_file(file_path)
 
@@ -180,7 +181,7 @@ class Testiny:
         Returns:
             str: The new _etag value returned by the API
         """
-        url = os.path.join(Testiny.__API_URL, "testcase", str(test_case_id))
+        url = urljoin(Testiny.__API_URL, f"testcase/{test_case_id}")
         data = Testiny.__read_test_case_file(file_path)
 
         headers = {
@@ -221,7 +222,7 @@ class Testiny:
         Returns:
             Any: The test case object
         """
-        url = os.path.join(Testiny.__API_URL, "testcase", str(test_case_id))
+        url = urljoin(Testiny.__API_URL, f"testcase/{test_case_id}")
         headers = {
             "Accept": Testiny.__CONTENT_TYPE,
             "X-Api-Key": get_configuration("api_key"),
