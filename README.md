@@ -16,7 +16,7 @@ Enable manual-test-case-as-code for [Testiny](https://www.testiny.io/).
     - [Uploading test case to Testiny](#uploading-test-case-to-testiny)
     - [Updating a test case](#updating-a-test-case)
     - [Reading a test case](#reading-a-test-case)
-    - [Using the `upsert` command](#using-the-upsert-command)
+    - [Using the `sync` command](#using-the-sync-command)
     - [Extra Information](#extra-information)
   - [Contribution Guide](#contribution-guide)
 - [References](#references)
@@ -126,11 +126,11 @@ To read a test case, run the following
 turbocase read --id 192
 ```
 
-### Using the `upsert` command
-To create or update an existing test case, use the `upsert` command. This command will try to update an existing test case with the same title instead of creating a new one. If no such test case exists, a new one will be created automatically.
+### Using the `sync` command
+To create or update an existing test case, use the `sync` command. This command will try to update an existing test case with the same title instead of creating a new one. If no such test case exists, a new one will be created automatically.
 
 ```shell
-turbocase upsert test_case.yaml
+turbocase sync test_case.yaml
 ```
 
 ### Extra Information

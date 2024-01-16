@@ -251,14 +251,14 @@ def handle_read_command(args: argparse.Namespace, *, console: Console):
         print_error_hints(e, console=console)
 
 
-def add_upsert_command(subparsers: argparse._SubParsersAction):
+def add_sync_command(subparsers: argparse._SubParsersAction):
     """
-    Add the 'upsert' command to the subparsers.
+    Add the 'sync' command to the subparsers.
 
     Args:
         subparsers (argparse._SubParsersAction): The subparsers object to add the command to.
     """
-    upsert_parser = subparsers.add_parser(
+    sync_parser = subparsers.add_parser(
         "sync",
         help="Create a new test case or update an existing one (based on Title matching)",
         description="Create a new test case or update an existing one (based on Title matching)",
@@ -266,13 +266,13 @@ def add_upsert_command(subparsers: argparse._SubParsersAction):
         formatter_class=RichHelpFormatter,
     )
 
-    upsert_parser.add_argument(
+    sync_parser.add_argument(
         "file",
         help="Path of (YAML) test file",
         metavar="<file>",
     )
 
-    upsert_parser.add_argument(
+    sync_parser.add_argument(
         "-h",
         "--help",
         action="help",
@@ -280,10 +280,10 @@ def add_upsert_command(subparsers: argparse._SubParsersAction):
     )
 
 
-def handle_upsert_command(args: argparse.Namespace, *, console: Console):
+def handle_sync_command(args: argparse.Namespace, *, console: Console):
     """
-    Handles the upsert command by calling the appropriate test management system's
-    upsert_test_case method with the provided arguments.
+    Handles the sync command by calling the appropriate test management system's
+    sync_test_case method with the provided arguments.
 
     Args:
         args (argparse.Namespace): The parsed command-line arguments.
@@ -294,14 +294,14 @@ def handle_upsert_command(args: argparse.Namespace, *, console: Console):
 
     try:
         for file_path in args.files:
-            operation, test_case_id = Testiny.upsert_test_case(file_path)
+            operation, test_case_id = Testiny.sync_test_case(file_path)
             console.print(
-                f"[green]{SUCCESS_PREFIX} Upsert successful for test case "
+                f"[green]{SUCCESS_PREFIX} sync successful for test case "
                 f"[yellow]`{test_case_id}`[/yellow]. Operation: [yellow]`{operation.name}`[/yellow]."
             )
     except Exception as e:
         console.print(
-            f"[red]{FAILURE_PREFIX} Failed to upsert test case. Reason:\n[dark_orange]{e}"
+            f"[red]{FAILURE_PREFIX} Failed to sync test case. Reason:\n[dark_orange]{e}"
         )
         print_error_hints(e, console=console)
 
@@ -409,9 +409,9 @@ def parse_args(parser: argparse.ArgumentParser):
         with console.status("[bold green]Updating test case..."):
             handle_update_command(args, console=console)
 
-    elif args.selected_command == "upsert":
-        with console.status("[bold green]Upserting test case..."):
-            handle_upsert_command(args, console=console)
+    elif args.selected_command == "sync":
+        with console.status("[bold green]Syncing test case..."):
+            handle_sync_command(args, console=console)
 
     elif args.selected_command == "config":
         with console.status("[bold green]Configuring Turbo-Case..."):
@@ -422,7 +422,7 @@ def main():
     parser, subparsers = create_main_and_sub_parsers()
     add_config_command(subparsers)
 
-    add_upsert_command(subparsers)
+    add_sync_command(subparsers)
 
     add_create_command(subparsers)
 

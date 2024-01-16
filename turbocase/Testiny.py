@@ -8,9 +8,9 @@ import os
 from .utility import get_configuration
 
 
-class UpsertAction(Enum):
+class SyncAction(Enum):
     """
-    Enum representing the action to perform during an upsert operation.
+    Enum representing the action to perform during an sync operation.
 
     Possible values:
     - UPDATE: Indicates that the existing item was updated.
@@ -233,14 +233,14 @@ class Testiny:
         return response.json()
 
     @staticmethod
-    def upsert_test_case(file_path: str) -> Tuple[UpsertAction, int]:
+    def sync_test_case(file_path: str) -> Tuple[SyncAction, int]:
         """Creates or updates a test case from a YAML file using the passed API key
 
         Args:
             file_path (str): path to the YAML file containing the test case
 
         Returns:
-            Tuple[UpsertAction, int]: a tuple containing the action performed (create or update)
+            Tuple[SyncAction, int]: a tuple containing the action performed (create or update)
                 and the test case ID
         """
         data = Testiny.__read_test_case_file(file_path)
@@ -248,8 +248,8 @@ class Testiny:
 
         if test_case is None:
             test_case_id = Testiny.create_test_case(file_path)
-            return UpsertAction.CREATE, test_case_id
+            return SyncAction.CREATE, test_case_id
         else:
             test_case_id, etag = test_case
             Testiny.update_test_case(file_path, test_case_id, _etag=etag)
-            return UpsertAction.UPDATE, test_case_id
+            return SyncAction.UPDATE, test_case_id
