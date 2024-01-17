@@ -421,15 +421,15 @@ def main():
 
     add_global_options(parser)
 
+    add_config_command(subparsers)
+
+    add_upsert_command(subparsers)
+
     add_create_command(subparsers)
 
     add_update_command(subparsers)
 
     add_read_command(subparsers)
-
-    add_upsert_command(subparsers)
-
-    add_config_command(subparsers)
 
     parse_args(parser)
 
