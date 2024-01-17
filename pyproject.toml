@@ -5,6 +5,10 @@ build_command = """
     rm -rf build/
     rm -rf foo.egg-info/
     python setup.py sdist bdist_wheel
+
+    ./scripts/generate-preview.sh
+    git add assets/turbocase-preview.svg
 """
+
 
 version_variables = ["turbocase/__init__.py:__version__"]
