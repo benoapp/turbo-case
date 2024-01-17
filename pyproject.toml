@@ -1,0 +1,10 @@
+[tool.semantic_release]
+build_command = """
+
+    rm -rf dist/
+    rm -rf build/
+    rm -rf foo.egg-info/
+    python setup.py sdist bdist_wheel
+"""
+
+version_variables = ["turbocase/__init__.py:__version__"]

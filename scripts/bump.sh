@@ -4,6 +4,8 @@
 # and publish a new release to GitHub using
 # semantic-release
 
-semantic-release version
+args="$@"
+
+semantic-release version $args
 semantic-release publish
 git fetch
