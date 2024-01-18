@@ -70,7 +70,7 @@ class Testiny:
         Returns:
             str: The ETag value of the test case.
         """
-        test_case = Testiny.read_test_case(test_case_id)
+        test_case = Testiny.__get_test_case_json(test_case_id)
         return test_case["_etag"]
 
     @staticmethod
@@ -213,7 +213,7 @@ class Testiny:
         return response.json()["_etag"]
 
     @staticmethod
-    def read_test_case(test_case_id: int) -> Any:
+    def __get_test_case_json(test_case_id: int) -> Any:
         """Reads a test case using the passed API key
 
         Args:
@@ -254,3 +254,24 @@ class Testiny:
             test_case_id, etag = test_case
             Testiny.update_test_case(file_path, test_case_id, _etag=etag)
             return UpsertAction.UPDATE, test_case_id
+
+    @staticmethod
+    def read_test_case(test_case_id: int) -> str:
+        """Reads a test case using the passed API key
+
+        Args:
+            test_case_id (int): ID of the test case to read
+
+        Returns:
+            str: The test case in a human-readable format, with Rich colors
+        """
+        test_case = Testiny.__get_test_case_json(test_case_id)
+
+        NEW_LINE = "\n"
+        return (
+            f"[cyan]Title[/cyan]: {test_case['title']}\n"
+            f"[cyan]Preconditions[/cyan]: \n{NEW_LINE.join(f'  - {line}' for line in test_case['precondition_text'].split(NEW_LINE))}\n"
+            f"[cyan]Steps[/cyan]: \n{NEW_LINE.join(f'  - {line}' for line in test_case['steps_text'].split(NEW_LINE))}\n"
+            f"[cyan]Expected Results[/cyan]: \n{NEW_LINE.join(f'  - {line}' for line in test_case['expected_result_text'].split(NEW_LINE))}\n"
+            f"[cyan]Project ID[/cyan]: {test_case['project_id']}"
+        )

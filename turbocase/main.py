@@ -241,8 +241,8 @@ def handle_read_command(args: argparse.Namespace, *, console: Console):
         None
     """
     try:
-        test_case_info = Testiny.read_test_case(args.id)
-        console.print(test_case_info)
+        test_case = Testiny.read_test_case(args.id)
+        console.print(test_case)
     except Exception as e:
         console.print(
             f"[red]{FAILURE_PREFIX} Failed to read test case with ID: "
