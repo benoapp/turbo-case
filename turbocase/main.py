@@ -3,7 +3,7 @@ from rich_argparse import RichHelpFormatter, HelpPreviewAction
 import toml
 import os
 from rich.console import Console
-from .utility import get_banner, print_error_hints, CONFIG_FILE_PATH
+from .utility import print_banner, print_error_hints, CONFIG_FILE_PATH
 from .__init__ import __version__
 from .Testiny import Testiny
 
@@ -390,7 +390,8 @@ def parse_args(parser: argparse.ArgumentParser):
         exit(1)
 
     if args.selected_command is None:
-        console.print(get_banner())
+        print_banner()
+        print()
         print(parser.format_help())
 
     elif args.selected_command == "create":

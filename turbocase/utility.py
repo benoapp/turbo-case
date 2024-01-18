@@ -25,17 +25,15 @@ BANNER = r"""
 """
 
 
-def get_banner():
-    """Return banner and version string."""
-    msg1_raw = __version__
-    msg2_raw = "made with 🤍 by @Ahmad-Alsaleh"
-
-    full_msg_raw = f"{msg1_raw} - {msg2_raw}"
-    full_msg_colored = f"[bold][cyan]v{msg1_raw}[/cyan] - [red]{msg2_raw}[/red]\n"
-
-    padding = len(BANNER.splitlines()[1]) // 2 - len(full_msg_raw) // 2
-
-    return f"[yellow]{BANNER}\n" + " " * padding + full_msg_colored
+def print_banner():
+    """Print the banner and version of turbocase."""
+    console = Console(width=len(BANNER.splitlines()[1]))
+    console.print(f"[yellow]{BANNER}")
+    console.print(
+        f"[bold][cyan]v{__version__}[/cyan] - [red]made with :white_heart: by @Ahmad-Alsaleh[/red]",
+        justify="center",
+    )
+    console.rule(style="cyan", characters="═")
 
 
 def get_configuration(configuration_name: str) -> Any:
