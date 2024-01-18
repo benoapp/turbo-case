@@ -391,9 +391,7 @@ def parse_args(parser: argparse.ArgumentParser):
 
     if args.selected_command is None:
         console.print(get_banner())
-        console.print(
-            "[cyan]Run [yellow]`turbocase --help`[/yellow] for more information."
-        )
+        print(parser.format_help())
 
     elif args.selected_command == "create":
         with console.status("[bold green]Creating test cases..."):

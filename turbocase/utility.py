@@ -28,7 +28,7 @@ BANNER = r"""
 def get_banner():
     """Return banner and version string."""
     msg1_raw = __version__
-    msg2_raw = "made with :white_heart: by @Ahmad-Alsaleh"
+    msg2_raw = "made with 🤍 by @Ahmad-Alsaleh"
 
     full_msg_raw = f"{msg1_raw} - {msg2_raw}"
     full_msg_colored = f"[bold][cyan]v{msg1_raw}[/cyan] - [red]{msg2_raw}[/red]\n"
