@@ -2,6 +2,68 @@
 
 
 
+## v0.3.0 (2024-01-19)
+
+### Build
+
+* build: update preview image when building the package ([`2a8f7ca`](https://github.com/benoapp/turbo-case/commit/2a8f7ca327eae223862bb4bca22a8840cae72444))
+
+### Documentation
+
+* docs(readme.md): update `README.md` to match specs of the `project` command ([`1297f96`](https://github.com/benoapp/turbo-case/commit/1297f96daba714735364c3cab4bd5c12b6311eb3))
+
+### Feature
+
+* feat(upsert): support multiple files in the `upsert` command
+
+resolves #20 ([`aef3553`](https://github.com/benoapp/turbo-case/commit/aef3553fd5c6a426426859132254d3c872cb19d3))
+
+* feat: create `project` command that initializes a project
+
+This command initializes a project by creating the below folder structure. The command will get the projects IDs by promting the user for the full projects names in Testiny, and then an API call will be made to get the project IDs. Note that I have made some changes to requirements in `README.md`. Eg: I am creating `.project.toml` instead of `_config.yaml` to be consistent with other parts of the project. I am also using slightly different folder names than the ones in the README.md. Also, most notably, I named the command `project` instead of `init`. However, those changes are minor and could be changed easily if needed.
+
+path/to/project/project_name
+├── .project.toml
+└── app
+    ├── Web
+    └── mobile
+        ├── Android
+        └── iOS
+
+resolves #24 ([`0d2a75d`](https://github.com/benoapp/turbo-case/commit/0d2a75d246d65d56e1888768996697c4b23e6bb1))
+
+### Refactor
+
+* refactor(print_banner): using rich.console instead of manually centering the text ([`97ecbcd`](https://github.com/benoapp/turbo-case/commit/97ecbcd27c6089cbe78112a3498600e87c2b0510))
+
+### Style
+
+* style(upsert): fix typo in `upsert` help message ([`fd34ca6`](https://github.com/benoapp/turbo-case/commit/fd34ca6cec780fd7f990459d7d7cb3e45c2b7c5f))
+
+* style: use RGB colors for `upsert` &amp; `create` results
+
+If all files were successful, then the result will be show in green. If none is successful, red will
+be used. Yellow, otherwise. ([`dad7ef0`](https://github.com/benoapp/turbo-case/commit/dad7ef0d14e0c480f650284e5b7f0e7a147d48ca))
+
+* style: using lowercase folder names in `project` command ([`2da52d0`](https://github.com/benoapp/turbo-case/commit/2da52d0a2d0a4983c45948d2d74ac90da572d143))
+
+* style(read): modify `read` command to print in a YAML format not JSON
+
+The `read` command now prints the test case in a more human readable way. It used to be print all
+information, even non relavent one. Now, only important info is printed. Also, the old
+`read_test_case` function is now renamed to `__get_test_case_json`
+
+resolves #29 ([`e62e410`](https://github.com/benoapp/turbo-case/commit/e62e4103ed8d4844ef66d64a3cf407290520544a))
+
+* style: print usage when `turbocase` is used with no commands ([`0438735`](https://github.com/benoapp/turbo-case/commit/043873541a189fa85d455fd1f233f826169a65f1))
+
+* style: change the order of commands in `turbocase --help` ([`6312d8a`](https://github.com/benoapp/turbo-case/commit/6312d8a6e43199ad0a16310596f56bcffe378f0b))
+
+### Unknown
+
+* deploy: add Dockerfile ([`4d4f6e3`](https://github.com/benoapp/turbo-case/commit/4d4f6e3a15809b80163524693f3c3e85586f9547))
+
+
 ## v0.2.0 (2024-01-17)
 
 ### Breaking
