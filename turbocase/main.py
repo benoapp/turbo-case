@@ -365,6 +365,93 @@ def handle_config_command(args: argparse.Namespace, *, console: Console):
         print_error_hints(e, console=console)
 
 
+def add_project_command(subparsers: argparse._SubParsersAction):
+    """
+    Add the 'project' command to the subparsers.
+
+    Args:
+        subparsers (argparse._SubParsersAction): The subparsers object to add the command to.
+    """
+    project_parser = subparsers.add_parser(
+        "project",
+        help="Initialize a new project",
+        description="Initialize a new project",
+        add_help=False,
+        formatter_class=RichHelpFormatter,
+    )
+
+    project_parser.add_argument(
+        "project_name",
+        help="Name of the project",
+        metavar="<name>",
+    )
+
+    project_parser.add_argument(
+        "root_path",
+        help="Path of the project. Default: current directory",
+        metavar="<path>",
+        nargs="?",
+        default=".",
+    )
+
+    project_parser.add_argument(
+        "-h",
+        "--help",
+        action="help",
+        help=HELP_MESSAGE,
+    )
+
+
+def handle_project_command(args: argparse.Namespace, *, console: Console):
+    """
+    Handles the 'project' command by creating folders and files for the project.
+
+    Args:
+        args (argparse.Namespace): The parsed command-line arguments.
+        console (Console): The rich console object.
+
+    Returns:
+        None
+    """
+    try:
+        project_path = os.path.join(args.root_path, args.project_name)
+
+        projects_ids = dict()
+        for short_name in ("Web", "iOS", "Android"):
+            while True:
+                full_project_name = console.input(
+                    f"[green]Enter the full project name of the [yellow]`{short_name}`[/yellow] App from Testiny: "
+                )
+                project_id = Testiny.get_project_id(full_project_name)
+                if project_id:
+                    break
+                else:
+                    console.print(
+                        f"[red]{FAILURE_PREFIX} No project found with the given name. Try again."
+                    )
+            projects_ids[short_name] = project_id
+            console.print(
+                f"[green]{SUCCESS_PREFIX} Project found with ID: [yellow]`{projects_ids[short_name]}`[/yellow]."
+            )
+            console.print()  # cosmetic
+
+        os.makedirs(os.path.join(project_path, "app/mobile/Android"), exist_ok=True)
+        os.makedirs(os.path.join(project_path, "app/mobile/iOS"), exist_ok=True)
+        os.makedirs(os.path.join(project_path, "app/Web"), exist_ok=True)
+
+        with open(os.path.join(project_path, ".project.toml"), "w") as project_file:
+            toml.dump(projects_ids, project_file)
+
+        console.print(
+            f"[green]{SUCCESS_PREFIX} Successfully initialized project [yellow]`{args.project_name}`[/yellow]."
+        )
+    except Exception as e:
+        console.print(
+            f"[red]{FAILURE_PREFIX} Failed to create project. Reason:\n[dark_orange]{e}"
+        )
+        print_error_hints(e, console=console)
+
+
 def parse_args(parser: argparse.ArgumentParser):
     """
     Parse the command line arguments and execute the corresponding command.
@@ -414,6 +501,9 @@ def parse_args(parser: argparse.ArgumentParser):
         with console.status("[bold green]Configuring Turbo-Case..."):
             handle_config_command(args, console=console)
 
+    elif args.selected_command == "project":
+        handle_project_command(args, console=console)
+
 
 def main():
     parser, subparsers = create_main_and_sub_parsers()
@@ -421,6 +511,8 @@ def main():
     add_global_options(parser)
 
     add_config_command(subparsers)
+
+    add_project_command(subparsers)
 
     add_upsert_command(subparsers)
 
