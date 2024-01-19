@@ -374,8 +374,8 @@ def add_project_command(subparsers: argparse._SubParsersAction):
     """
     project_parser = subparsers.add_parser(
         "project",
-        help="Initialize a new project",
-        description="Initialize a new project",
+        help="Initialize a new  test management project",
+        description="Initialize a new  test management project",
         add_help=False,
         formatter_class=RichHelpFormatter,
     )
@@ -429,15 +429,15 @@ def handle_project_command(args: argparse.Namespace, *, console: Console):
                     console.print(
                         f"[red]{FAILURE_PREFIX} No project found with the given name. Try again."
                     )
-            projects_ids[short_name] = project_id
+            projects_ids[short_name.lower()] = project_id
             console.print(
-                f"[green]{SUCCESS_PREFIX} Project found with ID: [yellow]`{projects_ids[short_name]}`[/yellow]."
+                f"[green]{SUCCESS_PREFIX} Project found with ID: [yellow]`{projects_ids[short_name.lower()]}`[/yellow]."
             )
             console.print()  # cosmetic
 
-        os.makedirs(os.path.join(project_path, "app/mobile/Android"), exist_ok=True)
-        os.makedirs(os.path.join(project_path, "app/mobile/iOS"), exist_ok=True)
-        os.makedirs(os.path.join(project_path, "app/Web"), exist_ok=True)
+        os.makedirs(os.path.join(project_path, "app/mobile/android"), exist_ok=True)
+        os.makedirs(os.path.join(project_path, "app/mobile/ios"), exist_ok=True)
+        os.makedirs(os.path.join(project_path, "app/web"), exist_ok=True)
 
         with open(os.path.join(project_path, ".project.toml"), "w") as project_file:
             toml.dump(projects_ids, project_file)
