@@ -68,3 +68,22 @@ def print_error_hints(e: Exception, *, console: Console):
             console.print(ERROR_403_HINT)
         elif e.response.status_code == 404:
             console.print(ERROR_404_HINT)
+
+
+def get_result_color(created_files_n: int, file_n: int) -> str:
+    """
+    Determines the color of the result based on the number of created files and the total number of files.
+
+    Args:
+        created_files_n (int): The number of files that were successfully created.
+        file_n (int): The total number of files.
+
+    Returns:
+        str: The color of the result. Possible values are "green", "red", or "yellow".
+    """
+    if created_files_n == file_n:
+        return "green"
+    elif created_files_n == 0:
+        return "red"
+    else:
+        return "yellow"

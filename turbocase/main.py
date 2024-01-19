@@ -3,7 +3,7 @@ from rich_argparse import RichHelpFormatter, HelpPreviewAction
 import toml
 import os
 from rich.console import Console
-from .utility import print_banner, print_error_hints, CONFIG_FILE_PATH
+from .utility import print_banner, print_error_hints, get_result_color, CONFIG_FILE_PATH
 from .__init__ import __version__
 from .Testiny import Testiny
 
@@ -130,9 +130,10 @@ def handle_create_command(args: argparse.Namespace, *, console: Console):
             print_error_hints(e, console=console)
         console.print()  # cosmetic
     if len(args.files) > 1:
-        console.print("[cyan]Done")
+        console.rule("[cyan]Results", characters="═")
+        color = get_result_color(created_files_n, len(args.files))
         console.print(
-            f"[green]Created [cyan]{created_files_n}/{len(args.files)}[/cyan] test cases."
+            f"[{color}]Created [cyan]{created_files_n}/{len(args.files)}[/cyan] test cases."
         )
 
 
@@ -261,14 +262,14 @@ def add_upsert_command(subparsers: argparse._SubParsersAction):
     upsert_parser = subparsers.add_parser(
         "upsert",
         help="Create new test cases or update an existing ones (based on Title matching)",
-        description="Create a new test case or update an existing one (based on Title matching)",
+        description="Create new test cases or update an existing ones (based on Title matching)",
         add_help=False,
         formatter_class=RichHelpFormatter,
     )
 
     upsert_parser.add_argument(
-        "file",
-        help="Path of (YAML) test file",
+        "files",
+        help="Paths of (YAML) test files",
         metavar="<file>",
         nargs="+",
     )
@@ -292,7 +293,7 @@ def handle_upsert_command(args: argparse.Namespace, *, console: Console):
         None
     """
     upserted_files_n = 0
-    for file_path in args.file:
+    for file_path in args.files:
         console.rule(f"[cyan]Test Case File: [yellow]`{file_path}`[/yellow]")
         try:
             operation, test_case_id = Testiny.upsert_test_case(file_path)
@@ -308,10 +309,11 @@ def handle_upsert_command(args: argparse.Namespace, *, console: Console):
             )
             print_error_hints(e, console=console)
         console.print()  # cosmetic
-    if len(args.file) > 1:
-        console.print("[cyan]Done")
+    if len(args.files) > 1:
+        console.rule("[cyan]Results", characters="═")
+        color = get_result_color(upserted_files_n, len(args.files))
         console.print(
-            f"[green]Upserted [cyan]{upserted_files_n}/{len(args.file)}[/cyan] test cases."
+            f"[{color}]Upserted [cyan]{upserted_files_n}/{len(args.files)}[/cyan] test cases."
         )
 
 
