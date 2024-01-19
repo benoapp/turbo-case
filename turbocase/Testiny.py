@@ -275,3 +275,33 @@ class Testiny:
             f"[cyan]Expected Results[/cyan]: \n{NEW_LINE.join(f'  - {line}' for line in test_case['expected_result_text'].split(NEW_LINE))}\n"
             f"[cyan]Project ID[/cyan]: {test_case['project_id']}"
         )
+
+    @staticmethod
+    def get_project_id(project_name: str) -> int | None:
+        """Gets the ID of a project by its name
+
+        Args:
+            project_name (str): The name of the project.
+
+        Returns:
+            int: The ID of the project if found or None if no project is found.
+        """
+        url = urljoin(Testiny.__API_URL, "project/find")
+        payload = json.dumps({"filter": {"name": project_name}, "idOnly": True})
+        headers = {
+            "Content-Type": Testiny.__CONTENT_TYPE,
+            "Accept": Testiny.__CONTENT_TYPE,
+            "X-Api-Key": get_configuration("api_key"),
+        }
+
+        response = requests.request(
+            "POST", url, headers=headers, data=payload, timeout=10
+        )
+        response.raise_for_status()
+
+        meta, data = response.json().values()
+
+        if meta["count"] == 0:
+            return None
+
+        return data[0]["id"]
