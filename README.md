@@ -1,4 +1,4 @@
-# TurboCase
+# Turbo-Case
 
 ![turbocase-preview](assets/turbocase-preview.svg)
 
@@ -8,12 +8,14 @@
 Enable manual-test-case-as-code for [Testiny](https://www.testiny.io/).
 
 ## Table of contents
-- [TurboCase](#turbocase)
+- [Turbo-Case](#turbo-case)
   - [Table of contents](#table-of-contents)
   - [Installation](#installation)
+  - [Setup](#setup)
   - [Usage](#usage)
-    - [Creating a YAML test file](#creating-a-yaml-test-file)
-    - [Uploading test case to Testiny](#uploading-test-case-to-testiny)
+    - [Generating a test file](#generating-a-test-file)
+    - [Edit the YAML test file](#edit-the-yaml-test-file)
+    - [Uploading test cases to Testiny](#uploading-test-cases-to-testiny)
     - [Updating a test case](#updating-a-test-case)
     - [Reading a test case](#reading-a-test-case)
     - [Using the `upsert` command](#using-the-upsert-command)
@@ -38,62 +40,26 @@ Next, configure `turbocase` by running the following:
 ```shell
 turbocase config --api-key <YOUR_TESTINY_API_KEY>
 ```
+
+You can generate an Testiny API key by the following the instructions [here](https://app.testiny.io/settings/apikeys).
+
 ## Setup
 
-1. Structure your test management folder to look like this:
+1. Use `turbocase project <PROJ_NAME>` to initialize a test management project in the current directory.
+
+This command will automatically create the following folder structure:
+
 ```shell
-.
-├── _config.yaml
+path/to/project/project_name
+├── .project.toml
 └── app
-    ├── mobile-app
-    │   ├── android
-    │   │   └── android-only.yaml
-    │   └── iOS
-    │       └── ios-only.yaml
-    ├── new-test.yaml
-    └── web-app
-        └── only-web.yaml
+    ├── web
+    └── mobile
+        ├── android
+        └── ios
 ```
 
-> Focus on creating `_config.yaml` and the directories. The other Yamls are just for demonstration
-> We will add a `init` command later
-
-2. Map your Testiny projects in the `_config.yaml`
-```yaml
-Application: My App # decorative (optional)
-web-app: 1
-ios-app: 7
-android-app: 14
-```
-
-You can generate an API key using your corresponding tool: [Testiny](https://app.testiny.io/settings/apikeys)
-## Setup
-
-1. Structure your test management folder to look like this:
-```shell
-.
-├── _config.yaml
-└── app
-    ├── mobile-app
-    │   ├── android
-    │   │   └── android-only.yaml
-    │   └── iOS
-    │       └── ios-only.yaml
-    ├── new-test.yaml
-    └── web-app
-        └── only-web.yaml
-```
-
-> Focus on creating `_config.yaml` and the directories. The other Yamls are just for demonstration
-> We will add a `init` command later
-
-2. Map your Testiny projects in the `_config.yaml`
-```yaml
-Application: My App # decorative (optional)
-web-app: 1
-ios-app: 7
-android-app: 14
-```
+The `.project.toml` file contains the configuration of the project.
 
 ## Usage
 
@@ -120,9 +86,9 @@ expected results:
     - Success
 ```
 
-### Uploading test case to Testiny
+### Uploading test cases to Testiny
 
-A test case can be created and uploaded to [Testiny](https://www.testiny.io/) using the following:
+Test cases can be created and uploaded to [Testiny](https://www.testiny.io/) using the following:
 
 * Single file
 
@@ -141,7 +107,7 @@ turbocase create test_cases/*
 
 ### Updating a test case
 
-To update a test case, run the following:
+To update a specific test case, run the following:
 ```shell
 turbocase update --id 192 new_test_case.yaml
 ```
