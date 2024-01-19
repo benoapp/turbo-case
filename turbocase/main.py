@@ -261,8 +261,8 @@ def add_upsert_command(subparsers: argparse._SubParsersAction):
     """
     upsert_parser = subparsers.add_parser(
         "upsert",
-        help="Create new test cases or update an existing ones (based on Title matching)",
-        description="Create new test cases or update an existing ones (based on Title matching)",
+        help="Create new test cases or update existing ones (based on Title matching)",
+        description="Create new test cases or update existing ones (based on Title matching)",
         add_help=False,
         formatter_class=RichHelpFormatter,
     )
