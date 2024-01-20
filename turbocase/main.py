@@ -465,6 +465,106 @@ def handle_project_command(args: argparse.Namespace, *, console: Console):
         print_error_hints(e, console=console)
 
 
+def add_generate_command(subparsers: argparse._SubParsersAction):
+    """
+    Add the 'generate' command to the subparsers.
+
+    Args:
+        subparsers (argparse._SubParsersAction): The subparsers object to add the command to.
+    """
+    generate_parser = subparsers.add_parser(
+        "generate",
+        help="Generate test case template",
+        description="Generate test case template",
+        add_help=False,
+        formatter_class=RichHelpFormatter,
+    )
+
+    generate_parser.add_argument(
+        "app",
+        choices=["app", "web", "mobile", "android", "ios"],
+        help="The type of the app. Choose from: app, web, mobile, android, ios.",
+        metavar="<target_app>",
+    )
+
+    generate_parser.add_argument(
+        "test_title",
+        help="The title of the test case",
+        metavar="<test_title>",
+    )
+
+    generate_parser.add_argument(
+        "root_path",
+        help="Path of the project. Default: current directory",
+        metavar="<path>",
+        nargs="?",
+        default=".",
+    )
+
+    generate_parser.add_argument(
+        "-h",
+        "--help",
+        action="help",
+        help=HELP_MESSAGE,
+    )
+
+
+def handle_generate_command(args: argparse.Namespace, *, console: Console):
+    """
+    Handles the 'generate' command by creating a test case template in the corresponding app folder.
+
+    Args:
+        args (argparse.Namespace): The parsed command-line arguments.
+        console (Console): The rich console object.
+
+    Returns:
+        None
+    """
+    try:
+        if not os.path.exists(os.path.join(args.root_path, ".project.toml")):
+            console.print(
+                f"[red]{FAILURE_PREFIX} No project found in the given path. "
+                "Run [yellow]`turbocase project --help`[/yellow] "
+                "for more information on how to initialize a project."
+            )
+            exit(1)
+
+        app_to_path = {
+            "app": "app",
+            "mobile": "app/mobile",
+            "android": "app/mobile/android",
+            "ios": "app/mobile/ios",
+            "web": "app/web",
+        }
+        template = Testiny.generate_test_case_template(args.test_title)
+
+        full_template_path = os.path.join(
+            args.root_path, app_to_path[args.app], f"{args.test_title}.yaml"
+        )
+        if not os.path.exists(os.path.dirname(full_template_path)):
+            console.print(
+                f"[red]{FAILURE_PREFIX} Project folder is corrupted. "
+                "Run [yellow]`turbocase project --help`[/yellow] "
+                "for more information on how to re-initialize the project."
+            )
+            exit(1)
+
+        # ! note that the opening mode is 'x' not 'w', this is to prevent overwriting existing files
+        # ! (if file exists, a FileExistsError is raised)
+        # ! remove this note before merging to main
+        with open(full_template_path, "x") as template_file:
+            template_file.write(template)
+
+        console.print(
+            f"[green]{SUCCESS_PREFIX} Successfully generated test case template."
+        )
+    except Exception as e:
+        console.print(
+            f"[red]{FAILURE_PREFIX} Failed to generate test case template. Reason:\n[dark_orange]{e}"
+        )
+        print_error_hints(e, console=console)
+
+
 def parse_args(parser: argparse.ArgumentParser):
     """
     Parse the command line arguments and execute the corresponding command.
@@ -517,6 +617,9 @@ def parse_args(parser: argparse.ArgumentParser):
     elif args.selected_command == "project":
         handle_project_command(args, console=console)
 
+    elif args.selected_command == "generate":
+        handle_generate_command(args, console=console)
+
 
 def main():
     parser, subparsers = create_main_and_sub_parsers()
@@ -526,6 +629,8 @@ def main():
     add_config_command(subparsers)
 
     add_project_command(subparsers)
+
+    add_generate_command(subparsers)
 
     add_upsert_command(subparsers)
 

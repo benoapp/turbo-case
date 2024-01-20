@@ -305,3 +305,23 @@ class Testiny:
             return None
 
         return data[0]["id"]
+
+    @staticmethod
+    def generate_test_case_template(test_title: str) -> str:
+        """Generates a test case template with the given title.
+
+        Args:
+            test_title (str): The title of the test case.
+
+        Returns:
+            str: The generated test case template.
+        """
+        return (
+            f"title: {test_title}\n"
+            "preconditions:\n"
+            "  - \n"
+            "steps:\n"
+            "  - \n"
+            "expected results:\n"
+            "  - \n"
+        )
