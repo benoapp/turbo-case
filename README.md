@@ -65,8 +65,30 @@ The `.project.toml` file contains the configuration of the project.
 
 ### Generating a test file
 
+#### Generate a Test from a Feature
+
+TurboCase can generate test files from requirements files. Currently it supports `.feature` files.
+
+```shell
+turbocase generate testcase --file new.feature 
+```
+
+> Note that `@app:<app>` must be added. Also, you may add `@platform:<platform>` to specify which platform.
+
+#### Generate a Standalone Test
+
+TurboCase can generate a test file from CLI. Curretnly, it supports the `title` field. Other fields will need to be filled in the file.
+
 ```shell
 turbocase generate testcase [app|web|mobile|android|ios] "Title of Test Case"
+```
+
+#### Import a Testcase
+
+Turbocase can import testcases from your Test Management platform.
+
+```shell
+turbocase import 123
 ```
 
 ### Edit the YAML test file
@@ -75,14 +97,17 @@ The YAML file should contain `title`, `preconditions`, `steps`, and `expected re
 
 ```yaml
 title: Payment Gateway Works
-preconditions:
+preconditions: |
+    # new user
     - User logged in
     - Cart is not empty
-steps:
+steps: |
+    # user checks out a deal
     - Click on checkout 
     - Fill credit card information
     - Click on pay
-expected results:
+expected results: |
+    # payment is successfull
     - Success
 ```
 
