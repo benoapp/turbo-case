@@ -494,9 +494,9 @@ def add_generate_command(subparsers: argparse._SubParsersAction):
     )
 
     generate_parser.add_argument(
-        "root_path",
+        "project_path",
         help="Path of the project. Default: current directory",
-        metavar="<path>",
+        metavar="<project_path>",
         nargs="?",
         default=".",
     )
@@ -521,7 +521,7 @@ def handle_generate_command(args: argparse.Namespace, *, console: Console):
         None
     """
     try:
-        if not os.path.exists(os.path.join(args.root_path, ".project.toml")):
+        if not os.path.exists(os.path.join(args.project_path, ".project.toml")):
             console.print(
                 f"[red]{FAILURE_PREFIX} No project found in the given path. "
                 "Run [yellow]`turbocase project --help`[/yellow] "
@@ -539,7 +539,7 @@ def handle_generate_command(args: argparse.Namespace, *, console: Console):
         template = Testiny.generate_test_case_template(args.test_title)
 
         full_template_path = os.path.join(
-            args.root_path, app_to_path[args.app], f"{args.test_title}.yaml"
+            args.project_path, app_to_path[args.app], f"{args.test_title}.yaml"
         )
         if not os.path.exists(os.path.dirname(full_template_path)):
             console.print(
