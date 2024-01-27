@@ -115,3 +115,20 @@ def get_result_color(created_files_n: int, file_n: int) -> Color:
         return Color.RED
     else:
         return Color.YELLOW
+
+
+def file_exists_in_project(file_name, project_path) -> str | None:
+    """
+    Check if a file exists in a project folder.
+
+    Args:
+        file_name (str): The name of the file to check.
+        project_folder_path (str): The path to the project folder.
+
+    Returns:
+        str | None: The name of the folder where the file exists, or None if the file is not found.
+    """
+    for root, _, files in os.walk(project_path):
+        if file_name in files:
+            return os.path.basename(root)
+    return None

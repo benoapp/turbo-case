@@ -587,6 +587,14 @@ def handle_generate_command(args: argparse.Namespace, *, console: Console):
             )
             exit(1)
 
+        folder = file_exists_in_project(f"{args.test_title}.yaml", args.project_path)
+        if folder:
+            console.print(
+                f"[red]{FAILURE_PREFIX} Test case with the given title already exists in the project (Under `{folder}`). "
+                f"{HINT_PREFIX} Consider using the app name in the title to avoid conflicts."
+            )
+            exit(1)
+
         template = Testiny.generate_test_case_template(args.test_title)
 
         full_template_path = os.path.join(
@@ -602,7 +610,7 @@ def handle_generate_command(args: argparse.Namespace, *, console: Console):
             )
             exit(1)
 
-        with open(full_template_path, "x") as template_file:
+        with open(full_template_path, "w") as template_file:
             template_file.write(template)
 
         console.print(
