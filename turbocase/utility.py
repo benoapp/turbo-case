@@ -1,10 +1,10 @@
 from enum import Enum
 from typing import Any
 from requests import HTTPError
+from rich.console import Console
 import toml
 import os
 from .__init__ import __version__
-from rich.console import Console
 
 HINT_PREFIX = "[blue][bold]Hint:[/bold]"
 ERROR_404_HINT = (
@@ -33,6 +33,21 @@ class Color(Enum):
     YELLOW = "yellow"
 
 
+class Project(Enum):
+    """
+    Enum representing the project to which the test case belongs.
+
+    Possible values:
+    - IOS: Indicates that the test case belongs to the iOS project.
+    - ANDROID: Indicates that the test case belongs to the Android project.
+    - WEB: Indicates that the test case belongs to the Web project.
+    """
+
+    IOS = "ios"
+    ANDROID = "android"
+    WEB = "web"
+
+
 def print_banner():
     """Print the banner and version of turbocase."""
     console = Console(width=len(BANNER.splitlines()[1]))
@@ -44,7 +59,7 @@ def print_banner():
     console.rule(style="cyan", characters="═")
 
 
-def get_configuration(configuration_name: str) -> Any:
+def get_turbocase_configuration(configuration_name: str) -> Any:
     """
     Retrieve the value of a configuration from the ~/.turbocase.toml file.
 
@@ -67,6 +82,33 @@ def get_configuration(configuration_name: str) -> Any:
                 "Config file is corrupted. "
                 "Run [yellow]`turbocase config --api-key <YOUR_API_KEY>`[/yellow] to fix it.\n"
                 "See [yellow]`turbocase config --help`[/yellow] for more information."
+            )
+
+
+def get_project_id(project: Project, project_path: str) -> int:
+    """
+    Get the project ID for a given sub-app from the .project.toml file.
+
+    Args:
+        sub_app (str): The sub-app name (ios, android, or web).
+        project_path (str): The path to the project folder.
+
+    Returns:
+        int: The project ID.
+
+    Raises:
+        KeyError: If the sub-app is not found in the project configurations.
+    """
+    project_config_file_path = os.path.join(project_path, ".project.toml")
+    with open(project_config_file_path, "r") as project_config_file:
+        configurations = toml.load(project_config_file)
+        try:
+            return configurations[project.value]
+        except KeyError:
+            raise KeyError(
+                "Project folder is corrupted. "
+                "Run [yellow]`turbocase project --help`[/yellow] for more information "
+                "on how to fix it.\n"
             )
 
 

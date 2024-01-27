@@ -11,6 +11,14 @@ HELP_MESSAGE = "Show help"
 SUCCESS_PREFIX = ":heavy_check_mark:"
 FAILURE_PREFIX = "[bold][ERR][/bold]"
 
+APP_TO_PATH = {
+    "app": "app",
+    "mobile": "app/mobile",
+    "android": "app/mobile/android",
+    "ios": "app/mobile/ios",
+    "web": "app/web",
+}
+
 # change style of `back tick quoted text` in help messages
 RichHelpFormatter.styles["argparse.syntax"] = "bold yellow"
 
@@ -88,9 +96,26 @@ def add_create_command(subparsers: argparse._SubParsersAction):
     )
 
     create_parser.add_argument(
-        "files",
-        help="Paths of (YAML) test files",
-        metavar="<file>",
+        "-p",
+        "--project_path",
+        help="Path of the project. Default: current directory",
+        metavar="<project_path>",
+        default=".",
+    )
+
+    create_parser.add_argument(
+        "-a",
+        "--app",
+        choices=["app", "web", "mobile", "android", "ios"],
+        help="The type of the app. Choose from: app, web, mobile, android, ios. Default: app",
+        metavar="<target_app>",
+        default="app",
+    )
+
+    create_parser.add_argument(
+        "test_titles",
+        help="The title of the test case",
+        metavar="<test_title>",
         nargs="+",
     )
 
@@ -113,27 +138,36 @@ def handle_create_command(args: argparse.Namespace, *, console: Console):
         None
     """
     created_files_n = 0
-    for file_path in args.files:
-        console.rule(f"[cyan]Test Case File: [yellow]`{file_path}`[/yellow]")
+    for test_title in args.test_titles:
+        console.rule(f"[cyan]Test Case: [yellow]`{test_title}`[/yellow]")
+        test_path = os.path.join(
+            args.project_path, APP_TO_PATH[args.app], f"{test_title}.yaml"
+        )
         try:
-            test_case_id = Testiny.create_test_case(file_path)
+            test_cases_ids = Testiny.create_test_cases(
+                test_path, args.app, args.project_path
+            )
+
+            formatted_ids = ", ".join(
+                [f"{id} ({project.name} project)" for id, project in test_cases_ids]
+            )
             console.print(
                 f"[green]{SUCCESS_PREFIX} Successfully created test case "
-                f"with ID [yellow]`{test_case_id}`[/yellow]."
+                f"with IDs: [yellow]`{formatted_ids}`[/yellow]."
             )
             created_files_n += 1
         except Exception as e:
             console.print(
                 f"[red]{FAILURE_PREFIX} Failed to create test case from file: "
-                f"[yellow]`{file_path}`[/yellow]. Reason:\n[dark_orange]{e}"
+                f"[yellow]`{test_title}`[/yellow]. Reason:\n[dark_orange]{e}"
             )
             print_error_hints(e, console=console)
         console.print()  # cosmetic
-    if len(args.files) > 1:
+    if len(args.test_titles) > 1:
         console.rule("[cyan]Results", characters="═")
-        color = get_result_color(created_files_n, len(args.files))
+        color = get_result_color(created_files_n, len(args.test_titles))
         console.print(
-            f"[{color.value}]Created [cyan]{created_files_n}/{len(args.files)}[/cyan] test cases."
+            f"[{color.value}]Created [cyan]{created_files_n}/{len(args.test_titles)}[/cyan] test cases."
         )
 
 
@@ -529,17 +563,10 @@ def handle_generate_command(args: argparse.Namespace, *, console: Console):
             )
             exit(1)
 
-        app_to_path = {
-            "app": "app",
-            "mobile": "app/mobile",
-            "android": "app/mobile/android",
-            "ios": "app/mobile/ios",
-            "web": "app/web",
-        }
         template = Testiny.generate_test_case_template(args.test_title)
 
         full_template_path = os.path.join(
-            args.project_path, app_to_path[args.app], f"{args.test_title}.yaml"
+            args.project_path, APP_TO_PATH[args.app], f"{args.test_title}.yaml"
         )
         if not os.path.exists(os.path.dirname(full_template_path)):
             console.print(
@@ -549,9 +576,6 @@ def handle_generate_command(args: argparse.Namespace, *, console: Console):
             )
             exit(1)
 
-        # ! note that the opening mode is 'x' not 'w', this is to prevent overwriting existing files
-        # ! (if file exists, a FileExistsError is raised)
-        # ! remove this note before merging to main
         with open(full_template_path, "x") as template_file:
             template_file.write(template)
 
