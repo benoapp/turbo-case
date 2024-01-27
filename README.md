@@ -71,7 +71,7 @@ turbocase generate testcase [app|web|mobile|android|ios] "Title of Test Case"
 
 ### Edit the YAML test file
 
-The YAML file should contain `title`, `preconditions`, `steps`, `expected results`, and `project id` (case sensitive), as in the following example:
+The YAML file should contain `title`, `preconditions`, `steps`, and `expected results` (all case sensitive), as in the following example:
 
 ```yaml
 title: Payment Gateway Works

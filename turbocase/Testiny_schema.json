@@ -7,8 +7,7 @@
         "title",
         "preconditions",
         "steps",
-        "expected results",
-        "project id"
+        "expected results"
     ],
     "properties": {
         "title": {
@@ -38,10 +37,6 @@
                 "type": "string"
             },
             "minItems": 1
-        },
-        "project id": {
-            "description": "The id of the project the test case belongs to",
-            "type": "integer"
         }
     }
 }
