@@ -1,4 +1,4 @@
-from typing import Any, List, Tuple
+from typing import Any, Dict, List, Tuple
 from enum import Enum, auto
 from urllib.parse import urljoin
 import jsonschema
@@ -22,14 +22,14 @@ class Testiny:
     __API_URL = "https://app.testiny.io/api/v1/"
 
     @staticmethod
-    def __read_test_case_file(file_path: str) -> Any:
+    def __read_test_case_file(file_path: str) -> Dict[str, Any]:
         """Reads a test case file in YAML format and validates it against a JSON schema
 
         Args:
             file_path (str): The path to the test case file.
 
         Returns:
-            Any: The loaded test case data.
+            Dict[str, Any]: The content of the loaded test case.
 
         Raises:
             ValueError: If the file path does not refer to a valid YAML file.
@@ -38,45 +38,34 @@ class Testiny:
             raise ValueError("File path does not refer to a valid YAML file")
 
         with open(file_path, "r", encoding="utf-8") as file:
-            data = yaml.safe_load(file)
+            test_case_content = yaml.safe_load(file)
 
         with open(Testiny.__SCHEMA_FILE_PATH, "r", encoding="utf-8") as schema_file:
             schema = json.load(schema_file)
 
-        jsonschema.validate(data, schema)
+        jsonschema.validate(test_case_content, schema)
 
-        return data
-
-    @staticmethod
-    def __get_etag(test_case_id: int) -> str:
-        """
-        Get the ETag value for a given test case by reading it from the API.
-
-        Args:
-            test_case_id (int): The ID of the test case.
-
-        Returns:
-            str: The ETag value of the test case.
-        """
-        test_case = Testiny.__get_test_case_json(test_case_id)
-        return test_case["_etag"]
+        return test_case_content
 
     @staticmethod
-    def __find_test_case_by_title(title: str) -> Tuple[int, str] | None:
+    def __find_test_case_by_title(
+        title: str, projects_ids: List[int]
+    ) -> List[Tuple[int, str]]:
         """Find a test case by its title.
 
         Args:
             title (str): The title of the test case.
+            project (Project): The project to which the test case belongs.
 
         Returns:
-            Tuple[int, str] | None: A tuple containing the ID and ETag of the test case if found,
-            or None if no test case is found.
+            List[Tuple[int, str]]: A list of tuples containing the ID and ETag of the found test case.
 
         Raises:
             ValueError: If more than one test case is found with the given title.
         """
         url = urljoin(Testiny.__API_URL, "testcase/find")
-        payload = json.dumps({"filter": {"title": title}})
+
+        payload = json.dumps({"filter": {"title": title, "project_id": projects_ids}})
         headers = {
             "Content-Type": Testiny.__CONTENT_TYPE,
             "Accept": Testiny.__CONTENT_TYPE,
@@ -88,17 +77,11 @@ class Testiny:
         )
         response.raise_for_status()
 
-        meta, data = response.json().values()
-        if meta["count"] == 0:
-            return None
+        test_cases = response.json()["data"]
 
-        if meta["count"] > 1:
-            raise ValueError(
-                "More than one test case found with the given title. "
-                "Please use the [yellow]`update`[/yellow] command."
-            )
+        results = [(test_case["id"], test_case["_etag"]) for test_case in test_cases]
 
-        return data[0]["id"], data[0]["_etag"]
+        return results
 
     @staticmethod
     def get_owner_user_id(api_key: str) -> int:
@@ -117,22 +100,24 @@ class Testiny:
 
     @staticmethod
     def create_test_cases(
-        file_path: str, app: App, project_path: str
+        test_title: str, app: App, project_path: str
     ) -> List[Tuple[int, Project]]:
-        """Creates a test case from a YAML file using the passed API key
+        """
+        Create test cases for each project in the given app using the provided file path and project path.
 
         Args:
-            file_path (str): path to the YAML file containing the test case
-            app (str): The name of the app to which the test case belongs
-            project_path (str): The path to the project folder
+            test_title (str): The title of the test case.
+            app (App): The app object containing the projects.
+            project_path (str): The path to the project.
 
         Returns:
-            List[Tuple[int, Project]]: A list of tuples containing the ID and project name of the created test case
+            List[Tuple[int, Project]]: A list of tuples containing the test case ID and the corresponding project.
         """
+        test_path = os.path.join(project_path, app.value.path, f"{test_title}.yaml")
+
+        test_case_content = Testiny.__read_test_case_file(test_path)
 
         url = urljoin(Testiny.__API_URL, "testcase")
-
-        data = Testiny.__read_test_case_file(file_path)
 
         headers = {
             "Content-Type": Testiny.__CONTENT_TYPE,
@@ -143,7 +128,10 @@ class Testiny:
         test_cases_ids = [
             (
                 Testiny.__create_single_test_case(
-                    project, project_path, data, headers, url
+                    get_project_id(project, project_path),
+                    test_case_content,
+                    headers,
+                    url,
                 ),
                 project,
             )
@@ -154,16 +142,19 @@ class Testiny:
 
     @staticmethod
     def __create_single_test_case(
-        project: Project, project_path: str, data: dict, headers: dict, url: str
+        project_id: int,
+        test_case_content: Dict[str, Any],
+        headers: Dict[str, Any],
+        url: str,
     ) -> int:
         """
-        Create a single test case.
+        Create a test case in a single Testiny project.
 
         Args:
             project (Project): The project to which the test case belongs.
             project_path (str): The path to the project folder.
-            data (dict): The test case data.
-            headers (dict): The request headers.
+            test_case_content (Dict[str, Any]): The test case content.
+            headers (Dict[str, Any]): The request headers.
             url (str): The API URL for creating the test case.
 
         Returns:
@@ -171,11 +162,13 @@ class Testiny:
         """
         payload = json.dumps(
             {
-                "title": data["title"],
-                "precondition_text": "\n".join(data["preconditions"]),
-                "steps_text": "\n".join(data["steps"]),
-                "expected_result_text": "\n".join(data["expected results"]),
-                "project_id": get_project_id(project, project_path),
+                "title": test_case_content["title"],
+                "precondition_text": "\n".join(test_case_content["preconditions"]),
+                "steps_text": "\n".join(test_case_content["steps"]),
+                "expected_result_text": "\n".join(
+                    test_case_content["expected results"]
+                ),
+                "project_id": project_id,
                 "template": "TEXT",
                 "owner_user_id": get_turbocase_configuration("owner_user_id"),
             }
@@ -189,40 +182,86 @@ class Testiny:
         return response.json()["id"]
 
     @staticmethod
-    def update_test_case(
-        file_path: str, test_case_id: int, *, _etag: str | None = None
-    ) -> str:
-        """Overwrites a test case from a YAML file using the passed API key
+    def update_test_cases(
+        test_title: str, app: App, project_path: str
+    ) -> List[Tuple[int, Project]]:
+        """
+        Update test cases for each project in the given app using the provided file path and project path.
 
         Args:
-            file_path (str): path to the YAML file containing the test case
-            test_case_id (int): ID of the test case to update
-            _etag (str, optional): ETag value for optimistic concurrency control. Defaults to None.
+            test_title (str): The title of the test case.
+            app (App): The app object containing the projects.
+            project_path (str): The path to the project.
 
         Returns:
-            str: The new _etag value returned by the API
+            List[Tuple[int, Project]]: A list of tuples containing the test case ID and the corresponding project.
         """
-        url = urljoin(Testiny.__API_URL, f"testcase/{test_case_id}")
-        data = Testiny.__read_test_case_file(file_path)
+        test_path = os.path.join(project_path, app.value.path, f"{test_title}.yaml")
+
+        test_case_content = Testiny.__read_test_case_file(test_path)
+
+        projects_ids = [
+            get_project_id(project, project_path) for project in app.value.projects
+        ]
+
+        found_test_cases = Testiny.__find_test_case_by_title(test_title, projects_ids)
+
+        if not found_test_cases:
+            raise ValueError(
+                "No test case found with the given title. "
+                "Please use the [yellow]`create`[/yellow] command."
+            )
+
+        test_cases_ids, etags = list(zip(*found_test_cases))
 
         headers = {
             "Content-Type": Testiny.__CONTENT_TYPE,
             "Accept": Testiny.__CONTENT_TYPE,
-            "X-Api-Key": get_configuration("api_key"),
+            "X-Api-Key": get_turbocase_configuration("api_key"),
         }
+
+        for project_id, test_case_id, etag in zip(projects_ids, test_cases_ids, etags):
+            Testiny.__update_single_test_case(
+                project_id, test_case_content, headers, test_case_id, etag
+            )
+
+        return list(zip(test_cases_ids, app.value.projects))
+
+    @staticmethod
+    def __update_single_test_case(
+        project_id: int,
+        test_case_content: Dict[str, Any],
+        headers: Dict[str, Any],
+        test_case_id: int,
+        etag: str,
+    ) -> int:
+        """
+        Update a test case in a single Testiny project.
+
+        Args:
+            project_id (int): The ID of the project.
+            test_case_content (Dict[str, Any]): The content of the test case.
+            headers (Dict[str, Any]): The headers for the API request.
+            test_case_id (int): The ID of the test case to be updated.
+            etag (str): The ETag value for optimistic concurrency control.
+
+        Returns:
+            int: The ID of the updated test case.
+        """
+        url = urljoin(Testiny.__API_URL, f"testcase/{test_case_id}")
 
         payload = json.dumps(
             {
-                "title": data["title"],
-                "precondition_text": "\n".join(data["preconditions"]),
-                "steps_text": "\n".join(data["steps"]),
-                "expected_result_text": "\n".join(data["expected results"]),
-                "project_id": data["project id"],
+                "title": test_case_content["title"],
+                "precondition_text": "\n".join(test_case_content["preconditions"]),
+                "steps_text": "\n".join(test_case_content["steps"]),
+                "expected_result_text": "\n".join(
+                    test_case_content["expected results"]
+                ),
+                "project_id": project_id,
                 "template": "TEXT",
-                "owner_user_id": get_configuration("owner_user_id"),
-                "_etag": _etag
-                if _etag is not None
-                else Testiny.__get_etag(test_case_id),
+                "owner_user_id": get_turbocase_configuration("owner_user_id"),
+                "_etag": etag,
             }
         )
 
@@ -231,22 +270,22 @@ class Testiny:
         )
         response.raise_for_status()
 
-        return response.json()["_etag"]
+        return response.json()["id"]
 
     @staticmethod
-    def __get_test_case_json(test_case_id: int) -> Any:
+    def __get_test_case_json(test_case_id: int) -> Dict[str, Any]:
         """Reads a test case using the passed API key
 
         Args:
             test_case_id (int): ID of the test case to read
 
         Returns:
-            Any: The test case object
+            Dict[str, Any]: The content of the test case
         """
         url = urljoin(Testiny.__API_URL, f"testcase/{test_case_id}")
         headers = {
             "Accept": Testiny.__CONTENT_TYPE,
-            "X-Api-Key": get_configuration("api_key"),
+            "X-Api-Key": get_turbocase_configuration("api_key"),
         }
 
         response = requests.request("GET", url, headers=headers, timeout=10)
@@ -294,7 +333,6 @@ class Testiny:
             f"[cyan]Preconditions[/cyan]: \n{NEW_LINE.join(f'  - {line}' for line in test_case['precondition_text'].split(NEW_LINE))}\n"
             f"[cyan]Steps[/cyan]: \n{NEW_LINE.join(f'  - {line}' for line in test_case['steps_text'].split(NEW_LINE))}\n"
             f"[cyan]Expected Results[/cyan]: \n{NEW_LINE.join(f'  - {line}' for line in test_case['expected_result_text'].split(NEW_LINE))}\n"
-            f"[cyan]Project ID[/cyan]: {test_case['project_id']}"
         )
 
     @staticmethod

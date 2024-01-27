@@ -4,7 +4,14 @@ import toml
 import os
 from rich.console import Console
 from .enums import App, Project
-from .utility import print_banner, print_error_hints, get_result_color, CONFIG_FILE_PATH
+from .utility import (
+    HINT_PREFIX,
+    file_exists_in_project,
+    print_banner,
+    print_error_hints,
+    get_result_color,
+    CONFIG_FILE_PATH,
+)
 from .__init__ import __version__
 from .Testiny import Testiny
 
@@ -133,12 +140,9 @@ def handle_create_command(args: argparse.Namespace, *, console: Console):
     created_files_n = 0
     for test_title in args.test_titles:
         console.rule(f"[cyan]Test Case: [yellow]`{test_title}`[/yellow]")
-        test_path = os.path.join(
-            args.project_path, App[args.app.upper()].value.path, f"{test_title}.yaml"
-        )
         try:
             test_cases_ids = Testiny.create_test_cases(
-                test_path, App[args.app.upper()], args.project_path
+                test_title, App[args.app.upper()], args.project_path
             )
 
             formatted_ids = ", ".join(
@@ -156,6 +160,7 @@ def handle_create_command(args: argparse.Namespace, *, console: Console):
             )
             print_error_hints(e, console=console)
         console.print()  # cosmetic
+
     if len(args.test_titles) > 1:
         console.rule("[cyan]Results", characters="═")
         color = get_result_color(created_files_n, len(args.test_titles))
@@ -173,25 +178,34 @@ def add_update_command(subparsers: argparse._SubParsersAction):
     """
     update_parser = subparsers.add_parser(
         "update",
-        help="Overwrite existing test cases (based on ID matching)",
-        description="Overwrite existing test cases (based on ID matching)",
+        help="Update existing test cases",
+        description="Update existing test cases",
         add_help=False,
         formatter_class=RichHelpFormatter,
     )
 
     update_parser.add_argument(
-        "file",
-        help="Path of (YAML) test file",
-        metavar="<file>",
+        "-p",
+        "--project-path",
+        help="Path of the project. Default: current directory",
+        metavar="<project_path>",
+        default=".",
     )
 
     update_parser.add_argument(
-        "-i",
-        "--id",
-        required=True,
-        metavar="<id>",
-        type=int,
-        help="Test case ID",
+        "-a",
+        "--app",
+        choices=[app.value.name for app in App],
+        help=f"The type of the app. Choose from: {', '.join([app.value.name for app in App])}. Default: app",
+        metavar="<target_app>",
+        default="app",
+    )
+
+    update_parser.add_argument(
+        "test_titles",
+        help="The title of the test case",
+        metavar="<test_title>",
+        nargs="+",
     )
 
     update_parser.add_argument(
@@ -212,18 +226,36 @@ def handle_update_command(args: argparse.Namespace, *, console: Console):
     Returns:
         None
     """
-    try:
-        Testiny.update_test_case(args.file, args.id)
+    updated_files_n = 0
+    for test_title in args.test_titles:
+        console.rule(f"[cyan]Test Case: [yellow]`{test_title}`[/yellow]")
+        try:
+            test_cases_ids = Testiny.update_test_cases(
+                test_title, App[args.app.upper()], args.project_path
+            )
+
+            formatted_ids = ", ".join(
+                [f"{id} ({project.name} project)" for id, project in test_cases_ids]
+            )
+            console.print(
+                f"[green]{SUCCESS_PREFIX} Successfully updated test case "
+                f"with ID: [yellow]`{formatted_ids}`[/yellow]."
+            )
+            updated_files_n += 1
+        except Exception as e:
+            console.print(
+                f"[red]{FAILURE_PREFIX} Failed to create test case from file: "
+                f"[yellow]`{test_title}`[/yellow]. Reason:\n[dark_orange]{e}"
+            )
+            print_error_hints(e, console=console)
+        console.print()  # cosmetic
+
+    if len(args.test_titles) > 1:
+        console.rule("[cyan]Results", characters="═")
+        color = get_result_color(updated_files_n, len(args.test_titles))
         console.print(
-            f"[green]{SUCCESS_PREFIX} Successfully updated test case with ID: "
-            f"[yellow]`{args.id}`[/yellow]."
+            f"[{color.value}]Updated [cyan]{updated_files_n}/{len(args.test_titles)}[/cyan] test cases."
         )
-    except Exception as e:
-        console.print(
-            f"[red]{FAILURE_PREFIX} Failed to update test case with ID: "
-            f"[yellow]`{args.id}`[/yellow]. Reason:\n[dark_orange]{e}"
-        )
-        print_error_hints(e, console=console)
 
 
 def add_read_command(subparsers: argparse._SubParsersAction):
