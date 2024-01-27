@@ -1,4 +1,4 @@
-from typing import Any, Tuple
+from typing import Any, List, Tuple
 from enum import Enum, auto
 from urllib.parse import urljoin
 import jsonschema
@@ -6,7 +6,7 @@ import requests
 import yaml
 import json
 import os
-from .utility import get_configuration
+from .utility import Project, get_project_id, get_turbocase_configuration
 
 
 class UpsertAction(Enum):
@@ -92,7 +92,7 @@ class Testiny:
         headers = {
             "Content-Type": Testiny.__CONTENT_TYPE,
             "Accept": Testiny.__CONTENT_TYPE,
-            "X-Api-Key": get_configuration("api_key"),
+            "X-Api-Key": get_turbocase_configuration("api_key"),
         }
 
         response = requests.request(
@@ -128,14 +128,18 @@ class Testiny:
         return response["userId"]
 
     @staticmethod
-    def create_test_case(file_path: str) -> int:
+    def create_test_cases(
+        file_path: str, app: str, project_path: str
+    ) -> List[Tuple[int, Project]]:
         """Creates a test case from a YAML file using the passed API key
 
         Args:
             file_path (str): path to the YAML file containing the test case
+            app (str): The name of the app to which the test case belongs
+            project_path (str): The path to the project folder
 
         Returns:
-            int: The ID of the created test case
+            List[Tuple[int, Project]]: A list of tuples containing the ID and project name of the created test case
         """
 
         url = urljoin(Testiny.__API_URL, "testcase")
@@ -145,18 +149,55 @@ class Testiny:
         headers = {
             "Content-Type": Testiny.__CONTENT_TYPE,
             "Accept": Testiny.__CONTENT_TYPE,
-            "X-Api-Key": get_configuration("api_key"),
+            "X-Api-Key": get_turbocase_configuration("api_key"),
         }
 
+        app_to_projects = {
+            "mobile": [Project.IOS, Project.ANDROID],
+            "app": [Project.IOS, Project.ANDROID, Project.WEB],
+            "android": [Project.ANDROID],
+            "ios": [Project.IOS],
+            "web": [Project.WEB],
+        }
+
+        test_cases_ids = [
+            (
+                Testiny.__create_single_test_case(
+                    project, project_path, data, headers, url
+                ),
+                project,
+            )
+            for project in app_to_projects[app]
+        ]
+
+        return test_cases_ids
+
+    @staticmethod
+    def __create_single_test_case(
+        project: Project, project_path: str, data: dict, headers: dict, url: str
+    ) -> int:
+        """
+        Create a single test case.
+
+        Args:
+            project (Project): The project to which the test case belongs.
+            project_path (str): The path to the project folder.
+            data (dict): The test case data.
+            headers (dict): The request headers.
+            url (str): The API URL for creating the test case.
+
+        Returns:
+            int: The ID of the created test case.
+        """
         payload = json.dumps(
             {
                 "title": data["title"],
                 "precondition_text": "\n".join(data["preconditions"]),
                 "steps_text": "\n".join(data["steps"]),
                 "expected_result_text": "\n".join(data["expected results"]),
-                "project_id": data["project id"],
+                "project_id": get_project_id(project, project_path),
                 "template": "TEXT",
-                "owner_user_id": get_configuration("owner_user_id"),
+                "owner_user_id": get_turbocase_configuration("owner_user_id"),
             }
         )
 
