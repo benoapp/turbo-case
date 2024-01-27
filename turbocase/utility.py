@@ -1,4 +1,4 @@
-import argparse
+from enum import Enum
 from typing import Any
 from requests import HTTPError
 import toml
@@ -23,6 +23,14 @@ BANNER = r"""
    ██║   ╚██████╔╝██║  ██║██████╔╝╚██████╔╝      ╚██████╗██║  ██║███████║███████╗
    ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚═════╝  ╚═════╝        ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝
 """
+
+
+class Color(Enum):
+    """The color of the result."""
+
+    GREEN = "green"
+    RED = "red"
+    YELLOW = "yellow"
 
 
 def print_banner():
@@ -70,7 +78,7 @@ def print_error_hints(e: Exception, *, console: Console):
             console.print(ERROR_404_HINT)
 
 
-def get_result_color(created_files_n: int, file_n: int) -> str:
+def get_result_color(created_files_n: int, file_n: int) -> Color:
     """
     Determines the color of the result based on the number of created files and the total number of files.
 
@@ -79,11 +87,11 @@ def get_result_color(created_files_n: int, file_n: int) -> str:
         file_n (int): The total number of files.
 
     Returns:
-        str: The color of the result. Possible values are "green", "red", or "yellow".
+        Color: The color of the result (RED, GREEN, or YELLOW).
     """
     if created_files_n == file_n:
-        return "green"
+        return Color.GREEN
     elif created_files_n == 0:
-        return "red"
+        return Color.RED
     else:
-        return "yellow"
+        return Color.YELLOW

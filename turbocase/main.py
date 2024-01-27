@@ -133,7 +133,7 @@ def handle_create_command(args: argparse.Namespace, *, console: Console):
         console.rule("[cyan]Results", characters="═")
         color = get_result_color(created_files_n, len(args.files))
         console.print(
-            f"[{color}]Created [cyan]{created_files_n}/{len(args.files)}[/cyan] test cases."
+            f"[{color.value}]Created [cyan]{created_files_n}/{len(args.files)}[/cyan] test cases."
         )
 
 
@@ -313,7 +313,7 @@ def handle_upsert_command(args: argparse.Namespace, *, console: Console):
         console.rule("[cyan]Results", characters="═")
         color = get_result_color(upserted_files_n, len(args.files))
         console.print(
-            f"[{color}]Upserted [cyan]{upserted_files_n}/{len(args.files)}[/cyan] test cases."
+            f"[{color.value}]Upserted [cyan]{upserted_files_n}/{len(args.files)}[/cyan] test cases."
         )
 
 
