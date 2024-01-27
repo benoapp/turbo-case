@@ -5,6 +5,7 @@ from rich.console import Console
 import toml
 import os
 from .__init__ import __version__
+from .enums import Color, Project
 
 HINT_PREFIX = "[blue][bold]Hint:[/bold]"
 ERROR_404_HINT = (
@@ -23,29 +24,6 @@ BANNER = r"""
    ██║   ╚██████╔╝██║  ██║██████╔╝╚██████╔╝      ╚██████╗██║  ██║███████║███████╗
    ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚═════╝  ╚═════╝        ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝
 """
-
-
-class Color(Enum):
-    """The color of the result."""
-
-    GREEN = "green"
-    RED = "red"
-    YELLOW = "yellow"
-
-
-class Project(Enum):
-    """
-    Enum representing the project to which the test case belongs.
-
-    Possible values:
-    - IOS: Indicates that the test case belongs to the iOS project.
-    - ANDROID: Indicates that the test case belongs to the Android project.
-    - WEB: Indicates that the test case belongs to the Web project.
-    """
-
-    IOS = "ios"
-    ANDROID = "android"
-    WEB = "web"
 
 
 def print_banner():
@@ -90,7 +68,7 @@ def get_project_id(project: Project, project_path: str) -> int:
     Get the project ID for a given sub-app from the .project.toml file.
 
     Args:
-        sub_app (str): The sub-app name (ios, android, or web).
+        project (Project): The project for which to retrieve the project ID.
         project_path (str): The path to the project folder.
 
     Returns:
@@ -103,12 +81,12 @@ def get_project_id(project: Project, project_path: str) -> int:
     with open(project_config_file_path, "r") as project_config_file:
         configurations = toml.load(project_config_file)
         try:
-            return configurations[project.value]
+            return configurations[project.name]
         except KeyError:
             raise KeyError(
                 "Project folder is corrupted. "
                 "Run [yellow]`turbocase project --help`[/yellow] for more information "
-                "on how to fix it.\n"
+                "on how to re-initialize the project."
             )
 
 

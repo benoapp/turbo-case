@@ -22,6 +22,8 @@ resolves #20 ([`aef3553`](https://github.com/benoapp/turbo-case/commit/aef3553fd
 
 This command initializes a project by creating the below folder structure. The command will get the projects IDs by promting the user for the full projects names in Testiny, and then an API call will be made to get the project IDs. Note that I have made some changes to requirements in `README.md`. Eg: I am creating `.project.toml` instead of `_config.yaml` to be consistent with other parts of the project. I am also using slightly different folder names than the ones in the README.md. Also, most notably, I named the command `project` instead of `init`. However, those changes are minor and could be changed easily if needed.
 
+```shell
+
 path/to/project/project_name
 ├── .project.toml
 └── app
@@ -29,6 +31,7 @@ path/to/project/project_name
     └── mobile
         ├── Android
         └── iOS
+```
 
 resolves #24 ([`0d2a75d`](https://github.com/benoapp/turbo-case/commit/0d2a75d246d65d56e1888768996697c4b23e6bb1))
 

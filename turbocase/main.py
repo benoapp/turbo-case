@@ -3,6 +3,7 @@ from rich_argparse import RichHelpFormatter, HelpPreviewAction
 import toml
 import os
 from rich.console import Console
+from .enums import App, Project
 from .utility import print_banner, print_error_hints, get_result_color, CONFIG_FILE_PATH
 from .__init__ import __version__
 from .Testiny import Testiny
@@ -10,14 +11,6 @@ from .Testiny import Testiny
 HELP_MESSAGE = "Show help"
 SUCCESS_PREFIX = ":heavy_check_mark:"
 FAILURE_PREFIX = "[bold][ERR][/bold]"
-
-APP_TO_PATH = {
-    "app": "app",
-    "mobile": "app/mobile",
-    "android": "app/mobile/android",
-    "ios": "app/mobile/ios",
-    "web": "app/web",
-}
 
 # change style of `back tick quoted text` in help messages
 RichHelpFormatter.styles["argparse.syntax"] = "bold yellow"
@@ -97,7 +90,7 @@ def add_create_command(subparsers: argparse._SubParsersAction):
 
     create_parser.add_argument(
         "-p",
-        "--project_path",
+        "--project-path",
         help="Path of the project. Default: current directory",
         metavar="<project_path>",
         default=".",
@@ -106,8 +99,8 @@ def add_create_command(subparsers: argparse._SubParsersAction):
     create_parser.add_argument(
         "-a",
         "--app",
-        choices=["app", "web", "mobile", "android", "ios"],
-        help="The type of the app. Choose from: app, web, mobile, android, ios. Default: app",
+        choices=[app.value.name for app in App],
+        help=f"The type of the app. Choose from: {', '.join([app.value.name for app in App])}. Default: app",
         metavar="<target_app>",
         default="app",
     )
@@ -141,11 +134,11 @@ def handle_create_command(args: argparse.Namespace, *, console: Console):
     for test_title in args.test_titles:
         console.rule(f"[cyan]Test Case: [yellow]`{test_title}`[/yellow]")
         test_path = os.path.join(
-            args.project_path, APP_TO_PATH[args.app], f"{test_title}.yaml"
+            args.project_path, App[args.app.upper()].value.path, f"{test_title}.yaml"
         )
         try:
             test_cases_ids = Testiny.create_test_cases(
-                test_path, args.app, args.project_path
+                test_path, App[args.app.upper()], args.project_path
             )
 
             formatted_ids = ", ".join(
@@ -153,7 +146,7 @@ def handle_create_command(args: argparse.Namespace, *, console: Console):
             )
             console.print(
                 f"[green]{SUCCESS_PREFIX} Successfully created test case "
-                f"with IDs: [yellow]`{formatted_ids}`[/yellow]."
+                f"with ID: [yellow]`{formatted_ids}`[/yellow]."
             )
             created_files_n += 1
         except Exception as e:
@@ -464,10 +457,10 @@ def handle_project_command(args: argparse.Namespace, *, console: Console):
         project_path = os.path.join(args.root_path, args.project_name)
 
         projects_ids = dict()
-        for short_name in ("Web", "iOS", "Android"):
+        for project in Project:
             while True:
                 full_project_name = console.input(
-                    f"[green]Enter the full project name of the [yellow]`{short_name}`[/yellow] App from Testiny: "
+                    f"[green]Enter the full project name of the [yellow]`{project.name}`[/yellow] App in Testiny: "
                 )
                 project_id = Testiny.get_project_id(full_project_name)
                 if project_id:
@@ -476,15 +469,14 @@ def handle_project_command(args: argparse.Namespace, *, console: Console):
                     console.print(
                         f"[red]{FAILURE_PREFIX} No project found with the given name. Try again."
                     )
-            projects_ids[short_name.lower()] = project_id
+            projects_ids[project.name] = project_id
             console.print(
-                f"[green]{SUCCESS_PREFIX} Project found with ID: [yellow]`{projects_ids[short_name.lower()]}`[/yellow]."
+                f"[green]{SUCCESS_PREFIX} Project found with ID: [yellow]`{project_id}`[/yellow]."
             )
             console.print()  # cosmetic
 
-        os.makedirs(os.path.join(project_path, "app/mobile/android"), exist_ok=True)
-        os.makedirs(os.path.join(project_path, "app/mobile/ios"), exist_ok=True)
-        os.makedirs(os.path.join(project_path, "app/web"), exist_ok=True)
+        for app in App:
+            os.makedirs(os.path.join(project_path, app.value.path), exist_ok=True)
 
         with open(os.path.join(project_path, ".project.toml"), "w") as project_file:
             toml.dump(projects_ids, project_file)
@@ -516,8 +508,8 @@ def add_generate_command(subparsers: argparse._SubParsersAction):
 
     generate_parser.add_argument(
         "app",
-        choices=["app", "web", "mobile", "android", "ios"],
-        help="The type of the app. Choose from: app, web, mobile, android, ios.",
+        choices=[app.value.name for app in App],
+        help=f"The type of the app. Choose from: {', '.join([app.value.name for app in App])}.",
         metavar="<target_app>",
     )
 
@@ -566,7 +558,9 @@ def handle_generate_command(args: argparse.Namespace, *, console: Console):
         template = Testiny.generate_test_case_template(args.test_title)
 
         full_template_path = os.path.join(
-            args.project_path, APP_TO_PATH[args.app], f"{args.test_title}.yaml"
+            args.project_path,
+            App[args.app.upper()].value.path,
+            f"{args.test_title}.yaml",
         )
         if not os.path.exists(os.path.dirname(full_template_path)):
             console.print(

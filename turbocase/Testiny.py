@@ -6,20 +6,8 @@ import requests
 import yaml
 import json
 import os
-from .utility import Project, get_project_id, get_turbocase_configuration
-
-
-class UpsertAction(Enum):
-    """
-    Enum representing the action to perform during an upsert operation.
-
-    Possible values:
-    - UPDATE: Indicates that the existing item was updated.
-    - CREATE: Indicates that a new item was created.
-    """
-
-    UPDATE = auto()
-    CREATE = auto()
+from .utility import get_project_id, get_turbocase_configuration
+from .enums import App, Project, UpsertAction
 
 
 class Testiny:
@@ -129,7 +117,7 @@ class Testiny:
 
     @staticmethod
     def create_test_cases(
-        file_path: str, app: str, project_path: str
+        file_path: str, app: App, project_path: str
     ) -> List[Tuple[int, Project]]:
         """Creates a test case from a YAML file using the passed API key
 
@@ -152,14 +140,6 @@ class Testiny:
             "X-Api-Key": get_turbocase_configuration("api_key"),
         }
 
-        app_to_projects = {
-            "mobile": [Project.IOS, Project.ANDROID],
-            "app": [Project.IOS, Project.ANDROID, Project.WEB],
-            "android": [Project.ANDROID],
-            "ios": [Project.IOS],
-            "web": [Project.WEB],
-        }
-
         test_cases_ids = [
             (
                 Testiny.__create_single_test_case(
@@ -167,7 +147,7 @@ class Testiny:
                 ),
                 project,
             )
-            for project in app_to_projects[app]
+            for project in app.value.projects
         ]
 
         return test_cases_ids
@@ -332,7 +312,7 @@ class Testiny:
         headers = {
             "Content-Type": Testiny.__CONTENT_TYPE,
             "Accept": Testiny.__CONTENT_TYPE,
-            "X-Api-Key": get_configuration("api_key"),
+            "X-Api-Key": get_turbocase_configuration("api_key"),
         }
 
         response = requests.request(
