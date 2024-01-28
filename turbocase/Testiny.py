@@ -98,46 +98,6 @@ class Testiny:
         return response["userId"]
 
     @staticmethod
-    def create_test_case(
-        test_title: str, app: App, project_path: str
-    ) -> List[Tuple[int, Project]]:
-        """
-        Create test cases for each project in the given app using the provided file path and project path.
-
-        Args:
-            test_title (str): The title of the test case.
-            app (App): The app object containing the projects.
-            project_path (str): The path to the project.
-
-        Returns:
-            List[Tuple[int, Project]]: A list of tuples containing the test case ID and the corresponding project.
-        """
-        test_path = os.path.join(project_path, app.value.path, f"{test_title}.yaml")
-
-        test_case_content = Testiny.__read_test_case_file(test_path)
-
-        headers = {
-            "Content-Type": Testiny.__CONTENT_TYPE,
-            "Accept": Testiny.__CONTENT_TYPE,
-            "X-Api-Key": get_turbocase_configuration("api_key"),
-        }
-
-        test_cases_ids = [
-            (
-                Testiny.__create_test_case_in_single_project(
-                    test_title,
-                    get_project_id(project, project_path),
-                    test_case_content,
-                    headers,
-                ),
-                project,
-            )
-            for project in app.value.projects
-        ]
-
-        return test_cases_ids
-
-    @staticmethod
     def __create_test_case_in_single_project(
         test_title: str,
         project_id: int,
@@ -178,52 +138,6 @@ class Testiny:
         response.raise_for_status()
 
         return response.json()["id"]
-
-    @staticmethod
-    def update_test_case(
-        test_title: str, app: App, project_path: str
-    ) -> List[Tuple[int, Project]]:
-        """
-        Update test cases for each project in the given app using the provided file path and project path.
-
-        Args:
-            test_title (str): The title of the test case.
-            app (App): The app object containing the projects.
-            project_path (str): The path to the project.
-
-        Returns:
-            List[Tuple[int, Project]]: A list of tuples containing the test case ID and the corresponding project.
-        """
-        test_path = os.path.join(project_path, app.value.path, f"{test_title}.yaml")
-
-        test_case_content = Testiny.__read_test_case_file(test_path)
-
-        projects_ids = [
-            get_project_id(project, project_path) for project in app.value.projects
-        ]
-
-        found_test_cases = Testiny.__find_test_case_by_title(test_title, projects_ids)
-
-        if not found_test_cases:
-            raise ValueError(
-                "No test case found with the given title. "
-                "Please use the [yellow]`create`[/yellow] command."
-            )
-
-        test_cases_ids, etags = list(zip(*found_test_cases))
-
-        headers = {
-            "Content-Type": Testiny.__CONTENT_TYPE,
-            "Accept": Testiny.__CONTENT_TYPE,
-            "X-Api-Key": get_turbocase_configuration("api_key"),
-        }
-
-        for project_id, test_case_id, etag in zip(projects_ids, test_cases_ids, etags):
-            Testiny.__update_test_case_in_single_project(
-                test_title, project_id, test_case_content, headers, test_case_id, etag
-            )
-
-        return list(zip(test_cases_ids, app.value.projects))
 
     @staticmethod
     def __update_test_case_in_single_project(

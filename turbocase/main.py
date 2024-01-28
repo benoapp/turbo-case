@@ -80,184 +80,6 @@ def add_global_options(parser: argparse.ArgumentParser):
     )
 
 
-def add_create_command(subparsers: argparse._SubParsersAction):
-    """
-    Add the 'create' command to the subparsers.
-
-    Args:
-        subparsers (argparse._SubParsersAction): The subparsers object to add the command to.
-    """
-    create_parser = subparsers.add_parser(
-        "create",
-        help="Create test cases from YAML files",
-        description="Create test cases from YAML files",
-        add_help=False,
-        formatter_class=RichHelpFormatter,
-    )
-
-    create_parser.add_argument(
-        "-p",
-        "--project-path",
-        help="Path of the project. Default: current directory",
-        metavar="<project_path>",
-        default=".",
-    )
-
-    create_parser.add_argument(
-        "-a",
-        "--app",
-        choices=[app.value.name for app in App],
-        help=f"The type of the app. Choose from: {', '.join([app.value.name for app in App])}. Default: app",
-        metavar="<target_app>",
-        default="app",
-    )
-
-    create_parser.add_argument(
-        "test_titles",
-        help="The title of the test case",
-        metavar="<test_title>",
-        nargs="+",
-    )
-
-    create_parser.add_argument(
-        "-h",
-        "--help",
-        action="help",
-        help=HELP_MESSAGE,
-    )
-
-
-def handle_create_command(args: argparse.Namespace, *, console: Console):
-    """
-    Handles the 'create' command by creating test cases using the specified test management system.
-
-    Args:
-        args (argparse.Namespace): The parsed command-line arguments.
-
-    Returns:
-        None
-    """
-    created_files_n = 0
-    for test_title in args.test_titles:
-        console.rule(f"[cyan]Test Case: [yellow]`{test_title}`[/yellow]")
-        try:
-            test_cases_ids = Testiny.create_test_case(
-                test_title, App[args.app.upper()], args.project_path
-            )
-
-            formatted_ids = ", ".join(
-                [f"{id} ({project.name} project)" for id, project in test_cases_ids]
-            )
-            console.print(
-                f"[green]{SUCCESS_PREFIX} Successfully created test case "
-                f"with ID: [yellow]`{formatted_ids}`[/yellow]."
-            )
-            created_files_n += 1
-        except Exception as e:
-            console.print(
-                f"[red]{FAILURE_PREFIX} Failed to create test case from file: "
-                f"[yellow]`{test_title}`[/yellow]. Reason:\n[dark_orange]{e}"
-            )
-            print_error_hints(e, console=console)
-        console.print()  # cosmetic
-
-    if len(args.test_titles) > 1:
-        console.rule("[cyan]Results", characters="═")
-        color = get_result_color(created_files_n, len(args.test_titles))
-        console.print(
-            f"[{color.value}]Created [cyan]{created_files_n}/{len(args.test_titles)}[/cyan] test cases."
-        )
-
-
-def add_update_command(subparsers: argparse._SubParsersAction):
-    """
-    Add the 'update' command to the subparsers.
-
-    Args:
-        subparsers (argparse._SubParsersAction): The subparsers object to add the command to.
-    """
-    update_parser = subparsers.add_parser(
-        "update",
-        help="Update existing test cases",
-        description="Update existing test cases",
-        add_help=False,
-        formatter_class=RichHelpFormatter,
-    )
-
-    update_parser.add_argument(
-        "-p",
-        "--project-path",
-        help="Path of the project. Default: current directory",
-        metavar="<project_path>",
-        default=".",
-    )
-
-    update_parser.add_argument(
-        "-a",
-        "--app",
-        choices=[app.value.name for app in App],
-        help=f"The type of the app. Choose from: {', '.join([app.value.name for app in App])}. Default: app",
-        metavar="<target_app>",
-        default="app",
-    )
-
-    update_parser.add_argument(
-        "test_titles",
-        help="The title of the test case",
-        metavar="<test_title>",
-        nargs="+",
-    )
-
-    update_parser.add_argument(
-        "-h",
-        "--help",
-        action="help",
-        help=HELP_MESSAGE,
-    )
-
-
-def handle_update_command(args: argparse.Namespace, *, console: Console):
-    """
-    Handles the 'update' command by updating a test case in the test management system.
-
-    Args:
-        args (argparse.Namespace): The parsed command-line arguments.
-
-    Returns:
-        None
-    """
-    updated_files_n = 0
-    for test_title in args.test_titles:
-        console.rule(f"[cyan]Test Case: [yellow]`{test_title}`[/yellow]")
-        try:
-            test_cases_ids = Testiny.update_test_case(
-                test_title, App[args.app.upper()], args.project_path
-            )
-
-            formatted_ids = ", ".join(
-                [f"{id} ({project.name} project)" for id, project in test_cases_ids]
-            )
-            console.print(
-                f"[green]{SUCCESS_PREFIX} Successfully updated test case "
-                f"with ID: [yellow]`{formatted_ids}`[/yellow]."
-            )
-            updated_files_n += 1
-        except Exception as e:
-            console.print(
-                f"[red]{FAILURE_PREFIX} Failed to create test case from file: "
-                f"[yellow]`{test_title}`[/yellow]. Reason:\n[dark_orange]{e}"
-            )
-            print_error_hints(e, console=console)
-        console.print()  # cosmetic
-
-    if len(args.test_titles) > 1:
-        console.rule("[cyan]Results", characters="═")
-        color = get_result_color(updated_files_n, len(args.test_titles))
-        console.print(
-            f"[{color.value}]Updated [cyan]{updated_files_n}/{len(args.test_titles)}[/cyan] test cases."
-        )
-
-
 def add_read_command(subparsers: argparse._SubParsersAction):
     """
     Add the 'read' command to the subparsers.
@@ -614,7 +436,7 @@ def handle_generate_command(args: argparse.Namespace, *, console: Console):
         folder = file_exists_in_project(f"{args.test_title}.yaml", args.project_path)
         if folder:
             console.print(
-                f"[red]{FAILURE_PREFIX} Test case with the given title already exists in the project (Under `{folder}`). "
+                f"[red]{FAILURE_PREFIX} Test case with the given title already exists in the project (Under `{folder}`).\n"
                 f"{HINT_PREFIX} Consider using the app and/or project names in the title to avoid conflicts."
             )
             exit(1)
@@ -676,17 +498,9 @@ def parse_args(parser: argparse.ArgumentParser):
         print()
         print(parser.format_help())
 
-    elif args.selected_command == "create":
-        with console.status("[bold green]Creating test cases..."):
-            handle_create_command(args, console=console)
-
     elif args.selected_command == "read":
         with console.status("[bold green]Reading test case..."):
             handle_read_command(args, console=console)
-
-    elif args.selected_command == "update":
-        with console.status("[bold green]Updating test case..."):
-            handle_update_command(args, console=console)
 
     elif args.selected_command == "upsert":
         with console.status("[bold green]Upserting test cases..."):
@@ -715,10 +529,6 @@ def main():
     add_generate_command(subparsers)
 
     add_upsert_command(subparsers)
-
-    add_create_command(subparsers)
-
-    add_update_command(subparsers)
 
     add_read_command(subparsers)
 
