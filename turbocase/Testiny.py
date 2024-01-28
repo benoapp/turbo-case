@@ -1,5 +1,4 @@
 from typing import Any, Dict, List, Tuple
-from enum import Enum, auto
 from urllib.parse import urljoin
 import jsonschema
 import requests
@@ -99,7 +98,7 @@ class Testiny:
         return response["userId"]
 
     @staticmethod
-    def create_test_cases(
+    def create_test_case(
         test_title: str, app: App, project_path: str
     ) -> List[Tuple[int, Project]]:
         """
@@ -117,8 +116,6 @@ class Testiny:
 
         test_case_content = Testiny.__read_test_case_file(test_path)
 
-        url = urljoin(Testiny.__API_URL, "testcase")
-
         headers = {
             "Content-Type": Testiny.__CONTENT_TYPE,
             "Accept": Testiny.__CONTENT_TYPE,
@@ -127,12 +124,11 @@ class Testiny:
 
         test_cases_ids = [
             (
-                Testiny.__create_single_test_case(
+                Testiny.__create_test_case_in_single_project(
                     test_title,
                     get_project_id(project, project_path),
                     test_case_content,
                     headers,
-                    url,
                 ),
                 project,
             )
@@ -142,12 +138,11 @@ class Testiny:
         return test_cases_ids
 
     @staticmethod
-    def __create_single_test_case(
+    def __create_test_case_in_single_project(
         test_title: str,
         project_id: int,
         test_case_content: Dict[str, Any],
         headers: Dict[str, Any],
-        url: str,
     ) -> int:
         """
         Create a test case in a single Testiny project.
@@ -157,11 +152,12 @@ class Testiny:
             project_id (int): The ID of the project.
             test_case_content (Dict[str, Any]): The content of the test case.
             headers (Dict[str, Any]): The headers for the API request.
-            url (str): The URL for the API request.
 
         Returns:
             int: The ID of the created test case.
         """
+        url = urljoin(Testiny.__API_URL, "testcase")
+
         payload = json.dumps(
             {
                 "title": test_title,
@@ -184,7 +180,7 @@ class Testiny:
         return response.json()["id"]
 
     @staticmethod
-    def update_test_cases(
+    def update_test_case(
         test_title: str, app: App, project_path: str
     ) -> List[Tuple[int, Project]]:
         """
@@ -223,14 +219,14 @@ class Testiny:
         }
 
         for project_id, test_case_id, etag in zip(projects_ids, test_cases_ids, etags):
-            Testiny.__update_single_test_case(
+            Testiny.__update_test_case_in_single_project(
                 test_title, project_id, test_case_content, headers, test_case_id, etag
             )
 
         return list(zip(test_cases_ids, app.value.projects))
 
     @staticmethod
-    def __update_single_test_case(
+    def __update_test_case_in_single_project(
         test_title: str,
         project_id: int,
         test_case_content: Dict[str, Any],
@@ -298,26 +294,62 @@ class Testiny:
         return response.json()
 
     @staticmethod
-    def upsert_test_case(file_path: str) -> Tuple[UpsertAction, int]:
+    def upsert_test_case(
+        test_title: str, app: App, project_path: str
+    ) -> Tuple[UpsertAction, List[Tuple[int, Project]]]:
         """Creates or updates a test case from a YAML file using the passed API key
 
         Args:
             file_path (str): path to the YAML file containing the test case
+            app (str): The name of the app to which the test case belongs
+            project_path (str): The path to the project folder
 
         Returns:
-            Tuple[UpsertAction, int]: a tuple containing the action performed (create or update)
-                and the test case ID
+            Tuple[UpsertAction, List[Tuple[int, Project]]]: A tuple containing the action performed
+                and a list of tuples containing the test case ID and project name of the created/updated test case
         """
-        data = Testiny.__read_test_case_file(file_path)
-        test_case = Testiny.__find_test_case_by_title(data["title"])
+        headers = {
+            "Content-Type": Testiny.__CONTENT_TYPE,
+            "Accept": Testiny.__CONTENT_TYPE,
+            "X-Api-Key": get_turbocase_configuration("api_key"),
+        }
 
-        if test_case is None:
-            test_case_id = Testiny.create_test_case(file_path)
-            return UpsertAction.CREATE, test_case_id
+        test_path = os.path.join(project_path, app.value.path, f"{test_title}.yaml")
+        test_case_content = Testiny.__read_test_case_file(test_path)
+
+        projects_ids = [
+            get_project_id(project, project_path) for project in app.value.projects
+        ]
+
+        found_test_cases = Testiny.__find_test_case_by_title(test_title, projects_ids)
+
+        if found_test_cases:
+            test_cases_ids, etags = list(zip(*found_test_cases))
+            for project_id, test_case_id, etag in zip(
+                projects_ids, test_cases_ids, etags
+            ):
+                Testiny.__update_test_case_in_single_project(
+                    test_title,
+                    project_id,
+                    test_case_content,
+                    headers,
+                    test_case_id,
+                    etag,
+                )
+            upsert_operation = UpsertAction.UPDATE
         else:
-            test_case_id, etag = test_case
-            Testiny.update_test_case(file_path, test_case_id, _etag=etag)
-            return UpsertAction.UPDATE, test_case_id
+            test_cases_ids = []
+            for project_id in projects_ids:
+                test_case_id = Testiny.__create_test_case_in_single_project(
+                    test_title,
+                    project_id,
+                    test_case_content,
+                    headers,
+                )
+                test_cases_ids.append(test_case_id)
+            upsert_operation = UpsertAction.CREATE
+
+        return upsert_operation, list(zip(test_cases_ids, app.value.projects))
 
     @staticmethod
     def read_test_case(test_case_id: int) -> str:

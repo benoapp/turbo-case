@@ -1,4 +1,3 @@
-from enum import Enum
 from typing import Any
 from requests import HTTPError
 from rich.console import Console
