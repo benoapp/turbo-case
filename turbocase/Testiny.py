@@ -128,6 +128,7 @@ class Testiny:
         test_cases_ids = [
             (
                 Testiny.__create_single_test_case(
+                    test_title,
                     get_project_id(project, project_path),
                     test_case_content,
                     headers,
@@ -142,6 +143,7 @@ class Testiny:
 
     @staticmethod
     def __create_single_test_case(
+        test_title: str,
         project_id: int,
         test_case_content: Dict[str, Any],
         headers: Dict[str, Any],
@@ -151,18 +153,18 @@ class Testiny:
         Create a test case in a single Testiny project.
 
         Args:
-            project (Project): The project to which the test case belongs.
-            project_path (str): The path to the project folder.
-            test_case_content (Dict[str, Any]): The test case content.
-            headers (Dict[str, Any]): The request headers.
-            url (str): The API URL for creating the test case.
+            test_title (str): The title of the test case.
+            project_id (int): The ID of the project.
+            test_case_content (Dict[str, Any]): The content of the test case.
+            headers (Dict[str, Any]): The headers for the API request.
+            url (str): The URL for the API request.
 
         Returns:
             int: The ID of the created test case.
         """
         payload = json.dumps(
             {
-                "title": test_case_content["title"],
+                "title": test_title,
                 "precondition_text": "\n".join(test_case_content["preconditions"]),
                 "steps_text": "\n".join(test_case_content["steps"]),
                 "expected_result_text": "\n".join(
@@ -222,13 +224,14 @@ class Testiny:
 
         for project_id, test_case_id, etag in zip(projects_ids, test_cases_ids, etags):
             Testiny.__update_single_test_case(
-                project_id, test_case_content, headers, test_case_id, etag
+                test_title, project_id, test_case_content, headers, test_case_id, etag
             )
 
         return list(zip(test_cases_ids, app.value.projects))
 
     @staticmethod
     def __update_single_test_case(
+        test_title: str,
         project_id: int,
         test_case_content: Dict[str, Any],
         headers: Dict[str, Any],
@@ -239,6 +242,7 @@ class Testiny:
         Update a test case in a single Testiny project.
 
         Args:
+            test_title (str): The title of the test case.
             project_id (int): The ID of the project.
             test_case_content (Dict[str, Any]): The content of the test case.
             headers (Dict[str, Any]): The headers for the API request.
@@ -252,7 +256,7 @@ class Testiny:
 
         payload = json.dumps(
             {
-                "title": test_case_content["title"],
+                "title": test_title,
                 "precondition_text": "\n".join(test_case_content["preconditions"]),
                 "steps_text": "\n".join(test_case_content["steps"]),
                 "expected_result_text": "\n".join(
@@ -327,12 +331,12 @@ class Testiny:
         """
         test_case = Testiny.__get_test_case_json(test_case_id)
 
-        NEW_LINE = "\n"
+        format_list = lambda text: "\n".join(f"  - {line}" for line in text.split("\n"))
+
         return (
-            f"[cyan]Title[/cyan]: {test_case['title']}\n"
-            f"[cyan]Preconditions[/cyan]: \n{NEW_LINE.join(f'  - {line}' for line in test_case['precondition_text'].split(NEW_LINE))}\n"
-            f"[cyan]Steps[/cyan]: \n{NEW_LINE.join(f'  - {line}' for line in test_case['steps_text'].split(NEW_LINE))}\n"
-            f"[cyan]Expected Results[/cyan]: \n{NEW_LINE.join(f'  - {line}' for line in test_case['expected_result_text'].split(NEW_LINE))}\n"
+            f"[cyan]Preconditions[/cyan]:\n{format_list(test_case['precondition_text'])}\n"
+            f"[cyan]Steps[/cyan]:\n{format_list(test_case['steps_text']) }\n"
+            f"[cyan]Expected Results[/cyan]:\n{format_list(test_case['expected_result_text'])}\n"
         )
 
     @staticmethod
@@ -366,17 +370,13 @@ class Testiny:
         return data[0]["id"]
 
     @staticmethod
-    def generate_test_case_template(test_title: str) -> str:
+    def generate_test_case_template() -> str:
         """Generates a test case template with the given title.
-
-        Args:
-            test_title (str): The title of the test case.
 
         Returns:
             str: The generated test case template.
         """
         return (
-            f"title: {test_title}\n"
             "preconditions:\n"
             "  - \n"
             "steps:\n"

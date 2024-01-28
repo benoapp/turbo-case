@@ -595,7 +595,7 @@ def handle_generate_command(args: argparse.Namespace, *, console: Console):
             )
             exit(1)
 
-        template = Testiny.generate_test_case_template(args.test_title)
+        template = Testiny.generate_test_case_template()
 
         full_template_path = os.path.join(
             args.project_path,
