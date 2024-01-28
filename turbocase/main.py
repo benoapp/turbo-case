@@ -141,7 +141,7 @@ def handle_create_command(args: argparse.Namespace, *, console: Console):
     for test_title in args.test_titles:
         console.rule(f"[cyan]Test Case: [yellow]`{test_title}`[/yellow]")
         try:
-            test_cases_ids = Testiny.create_test_cases(
+            test_cases_ids = Testiny.create_test_case(
                 test_title, App[args.app.upper()], args.project_path
             )
 
@@ -230,7 +230,7 @@ def handle_update_command(args: argparse.Namespace, *, console: Console):
     for test_title in args.test_titles:
         console.rule(f"[cyan]Test Case: [yellow]`{test_title}`[/yellow]")
         try:
-            test_cases_ids = Testiny.update_test_cases(
+            test_cases_ids = Testiny.update_test_case(
                 test_title, App[args.app.upper()], args.project_path
             )
 
@@ -327,9 +327,26 @@ def add_upsert_command(subparsers: argparse._SubParsersAction):
     )
 
     upsert_parser.add_argument(
-        "files",
-        help="Paths of (YAML) test files",
-        metavar="<file>",
+        "-p",
+        "--project-path",
+        help="Path of the project. Default: current directory",
+        metavar="<project_path>",
+        default=".",
+    )
+
+    upsert_parser.add_argument(
+        "-a",
+        "--app",
+        choices=[app.value.name for app in App],
+        help=f"The type of the app. Choose from: {', '.join([app.value.name for app in App])}. Default: app",
+        metavar="<target_app>",
+        default="app",
+    )
+
+    upsert_parser.add_argument(
+        "test_titles",
+        help="The title of the test case",
+        metavar="<test_title>",
         nargs="+",
     )
 
@@ -352,27 +369,34 @@ def handle_upsert_command(args: argparse.Namespace, *, console: Console):
         None
     """
     upserted_files_n = 0
-    for file_path in args.files:
-        console.rule(f"[cyan]Test Case File: [yellow]`{file_path}`[/yellow]")
+    for test_title in args.test_titles:
+        console.rule(f"[cyan]Test Case: [yellow]`{test_title}`[/yellow]")
         try:
-            operation, test_case_id = Testiny.upsert_test_case(file_path)
+            upsert_operation, test_cases_ids = Testiny.upsert_test_case(
+                test_title, App[args.app.upper()], args.project_path
+            )
+
+            formatted_ids = ", ".join(
+                [f"{id} ({project.name} project)" for id, project in test_cases_ids]
+            )
+
             console.print(
-                f"[green]{SUCCESS_PREFIX} Successfully upserted test case with ID "
-                f"[yellow]`{test_case_id}`[/yellow]. Operation: [yellow]`{operation.name}`[/yellow]."
+                f"[green]{SUCCESS_PREFIX} Successfully upserted test case "
+                f"with ID: [yellow]`{formatted_ids}`[/yellow]. Operation: [yellow]`{upsert_operation.name}`[/yellow]."
             )
             upserted_files_n += 1
         except Exception as e:
             console.print(
                 f"[red]{FAILURE_PREFIX} Failed to upsert test case from file: "
-                f"[yellow]`{file_path}[/yellow]. Reason:\n[dark_orange]{e}"
+                f"[yellow]`{test_title}[/yellow]. Reason:\n[dark_orange]{e}"
             )
             print_error_hints(e, console=console)
         console.print()  # cosmetic
-    if len(args.files) > 1:
+    if len(args.test_titles) > 1:
         console.rule("[cyan]Results", characters="═")
-        color = get_result_color(upserted_files_n, len(args.files))
+        color = get_result_color(upserted_files_n, len(args.test_titles))
         console.print(
-            f"[{color.value}]Upserted [cyan]{upserted_files_n}/{len(args.files)}[/cyan] test cases."
+            f"[{color.value}]Upserted [cyan]{upserted_files_n}/{len(args.test_titles)}[/cyan] test cases."
         )
 
 
@@ -591,7 +615,7 @@ def handle_generate_command(args: argparse.Namespace, *, console: Console):
         if folder:
             console.print(
                 f"[red]{FAILURE_PREFIX} Test case with the given title already exists in the project (Under `{folder}`). "
-                f"{HINT_PREFIX} Consider using the app name in the title to avoid conflicts."
+                f"{HINT_PREFIX} Consider using the app and/or project names in the title to avoid conflicts."
             )
             exit(1)
 
