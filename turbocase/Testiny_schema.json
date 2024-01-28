@@ -4,16 +4,11 @@
     "description": "A Test Case for the Testiny Test Case Management",
     "type": "object",
     "required": [
-        "title",
         "preconditions",
         "steps",
         "expected results"
     ],
     "properties": {
-        "title": {
-            "description": "The title of the test case",
-            "type": "string"
-        },
         "preconditions": {
             "description": "The preconditions of the test case",
             "type": "array",
