@@ -43,7 +43,7 @@ class Project(Enum):
     WEB = "web"
 
 
-@dataclass(slots=True)
+@dataclass
 class AppType:
     """
     Represents an App type.
