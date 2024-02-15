@@ -64,7 +64,7 @@ def get_turbocase_configuration(configuration_name: str) -> Any:
 
 def get_project_id(project: Project, project_path: str) -> int:
     """
-    Get the project ID for a given sub-app from the .project.toml file.
+    Get the project ID for a given sub-app from the .turbocase/project.toml file.
 
     Args:
         project (Project): The project for which to retrieve the project ID.
@@ -76,7 +76,7 @@ def get_project_id(project: Project, project_path: str) -> int:
     Raises:
         KeyError: If the sub-app is not found in the project configurations.
     """
-    project_config_file_path = os.path.join(project_path, ".project.toml")
+    project_config_file_path = os.path.join(project_path, ".turbocase/project.toml")
     with open(project_config_file_path, "r") as project_config_file:
         configurations = toml.load(project_config_file)
         try:
