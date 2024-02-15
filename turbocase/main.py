@@ -356,7 +356,11 @@ def handle_project_command(args: argparse.Namespace, *, console: Console):
         for app in App:
             os.makedirs(os.path.join(project_path, app.value.path), exist_ok=True)
 
-        with open(os.path.join(project_path, ".project.toml"), "w") as project_file:
+        os.makedirs(os.path.join(project_path, ".turbocase"), exist_ok=True)
+
+        with open(
+            os.path.join(project_path, ".turbocase/project.toml"), "w"
+        ) as project_file:
             toml.dump(projects_ids, project_file)
 
         console.print(
@@ -425,7 +429,9 @@ def handle_generate_command(args: argparse.Namespace, *, console: Console):
         None
     """
     try:
-        if not os.path.exists(os.path.join(args.project_path, ".project.toml")):
+        if not os.path.exists(
+            os.path.join(args.project_path, ".turbocase/project.toml")
+        ):
             console.print(
                 f"[red]{FAILURE_PREFIX} No project found in the given path. "
                 "Run [yellow]`turbocase project --help`[/yellow] "
