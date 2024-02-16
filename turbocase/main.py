@@ -325,26 +325,27 @@ def handle_init_command(args: argparse.Namespace, *, console: Console):
     Returns:
         None
     """
+
+    def get_project_id(project: Project):
+        while True:
+            full_project_name = console.input(
+                f"[green]Enter the full project name of the [yellow]`{project.name}`[/yellow] App in Testiny: "
+            )
+
+            project_id = Testiny.get_project_id(full_project_name)
+            if project_id:
+                console.print(
+                    f"[green]{SUCCESS_PREFIX} Project found with ID: [yellow]`{project_id}`[/yellow].\n"
+                )
+                return project_id
+
+            console.print(
+                f"[red]{FAILURE_PREFIX} No project found with the given name. Try again."
+            )
+
     try:
         os.chdir(args.directory)
-        projects_ids = dict()
-        for project in Project:
-            while True:
-                full_project_name = console.input(
-                    f"[green]Enter the full project name of the [yellow]`{project.name}`[/yellow] App in Testiny: "
-                )
-                project_id = Testiny.get_project_id(full_project_name)
-                if project_id:
-                    break
-                else:
-                    console.print(
-                        f"[red]{FAILURE_PREFIX} No project found with the given name. Try again."
-                    )
-            projects_ids[project.name] = project_id
-            console.print(
-                f"[green]{SUCCESS_PREFIX} Project found with ID: [yellow]`{project_id}`[/yellow]."
-            )
-            console.print()  # cosmetic
+        projects_ids = {project.name: get_project_id(project) for project in Project}
 
         for app in App:
             os.makedirs(app.value.path, exist_ok=True)
