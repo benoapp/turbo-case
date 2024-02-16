@@ -418,9 +418,8 @@ def handle_generate_command(args: argparse.Namespace, *, console: Console):
         None
     """
     try:
-        if not os.path.exists(
-            os.path.join(args.project_path, ".turbocase/project.toml")
-        ):
+        os.chdir(args.project_path)
+        if not os.path.exists(".turbocase/project.toml"):
             console.print(
                 f"[red]{FAILURE_PREFIX} No project found in the given path. "
                 "Run [yellow]`turbocase project --help`[/yellow] "
@@ -439,9 +438,7 @@ def handle_generate_command(args: argparse.Namespace, *, console: Console):
         template = Testiny.generate_test_case_template()
 
         full_template_path = os.path.join(
-            args.project_path,
-            App[args.app.upper()].value.path,
-            f"{args.test_title}.yaml",
+            App[args.app.upper()].value.path, f"{args.test_title}.yaml"
         )
         if not os.path.exists(os.path.dirname(full_template_path)):
             console.print(
