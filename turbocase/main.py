@@ -283,36 +283,30 @@ def handle_config_command(args: argparse.Namespace, *, console: Console):
         print_error_hints(e, console=console)
 
 
-def add_project_command(subparsers: argparse._SubParsersAction):
+def add_init_command(subparsers: argparse._SubParsersAction):
     """
-    Add the 'project' command to the subparsers.
+    Add the 'init' command to the subparsers.
 
     Args:
         subparsers (argparse._SubParsersAction): The subparsers object to add the command to.
     """
-    project_parser = subparsers.add_parser(
-        "project",
-        help="Initialize a new  test management project",
-        description="Initialize a new  test management project",
+    init_parser = subparsers.add_parser(
+        "init",
+        help="Create an empty Git repository or reinitialize an existing one",
+        description="Create an empty test management project repository or reinitialize an existing one",
         add_help=False,
         formatter_class=RichHelpFormatter,
     )
 
-    project_parser.add_argument(
-        "project_name",
-        help="Name of the project",
-        metavar="<name>",
-    )
-
-    project_parser.add_argument(
-        "root_path",
-        help="Path of the project. Default: current directory",
-        metavar="<path>",
+    init_parser.add_argument(
+        "directory",
+        help="Path of the project. Default: current directory.",
+        metavar="<director>",
         nargs="?",
         default=".",
     )
 
-    project_parser.add_argument(
+    init_parser.add_argument(
         "-h",
         "--help",
         action="help",
@@ -320,9 +314,9 @@ def add_project_command(subparsers: argparse._SubParsersAction):
     )
 
 
-def handle_project_command(args: argparse.Namespace, *, console: Console):
+def handle_init_command(args: argparse.Namespace, *, console: Console):
     """
-    Handles the 'project' command by creating folders and files for the project.
+    Handles the 'int' command by creating folders and files for the project.
 
     Args:
         args (argparse.Namespace): The parsed command-line arguments.
@@ -332,8 +326,7 @@ def handle_project_command(args: argparse.Namespace, *, console: Console):
         None
     """
     try:
-        project_path = os.path.join(args.root_path, args.project_name)
-
+        os.chdir(args.directory)
         projects_ids = dict()
         for project in Project:
             while True:
@@ -354,18 +347,14 @@ def handle_project_command(args: argparse.Namespace, *, console: Console):
             console.print()  # cosmetic
 
         for app in App:
-            os.makedirs(os.path.join(project_path, app.value.path), exist_ok=True)
+            os.makedirs(app.value.path, exist_ok=True)
 
-        os.makedirs(os.path.join(project_path, ".turbocase"), exist_ok=True)
-
-        with open(
-            os.path.join(project_path, ".turbocase/project.toml"), "w"
-        ) as project_file:
+        os.makedirs(".turbocase", exist_ok=True)
+        with open(".turbocase/project.toml", "w") as project_file:
             toml.dump(projects_ids, project_file)
 
-        console.print(
-            f"[green]{SUCCESS_PREFIX} Successfully initialized project [yellow]`{args.project_name}`[/yellow]."
-        )
+        console.rule("[cyan]Results", characters="═", style="cyan")
+        console.print(f"[green]{SUCCESS_PREFIX} Successfully initialized project.")
     except Exception as e:
         console.print(
             f"[red]{FAILURE_PREFIX} Failed to create project. Reason:\n[dark_orange]{e}"
@@ -516,8 +505,8 @@ def parse_args(parser: argparse.ArgumentParser):
         with console.status("[bold green]Configuring Turbo-Case..."):
             handle_config_command(args, console=console)
 
-    elif args.selected_command == "project":
-        handle_project_command(args, console=console)
+    elif args.selected_command == "init":
+        handle_init_command(args, console=console)
 
     elif args.selected_command == "generate":
         handle_generate_command(args, console=console)
@@ -528,9 +517,9 @@ def main():
 
     add_global_options(parser)
 
-    add_config_command(subparsers)
+    add_init_command(subparsers)
 
-    add_project_command(subparsers)
+    add_config_command(subparsers)
 
     add_generate_command(subparsers)
 
