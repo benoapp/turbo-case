@@ -3,8 +3,8 @@ from requests import HTTPError
 from rich.console import Console
 import toml
 import os
-from .__init__ import __version__
-from .enums import Color, Project
+from turbocase.__init__ import __version__
+from turbocase.enums import Color, Project
 
 HINT_PREFIX = "[blue][bold]Hint:[/bold]"
 ERROR_404_HINT = (
