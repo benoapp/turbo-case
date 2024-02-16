@@ -5,8 +5,8 @@ import requests
 import yaml
 import json
 import os
-from .utility import get_project_id, get_turbocase_configuration
-from .enums import App, Project, UpsertAction
+from turbocase.utility import get_project_id, get_turbocase_configuration
+from turbocase.enums import App, Project, UpsertAction
 
 
 class Testiny:

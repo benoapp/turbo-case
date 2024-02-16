@@ -3,8 +3,8 @@ from rich_argparse import RichHelpFormatter, HelpPreviewAction
 import toml
 import os
 from rich.console import Console
-from .enums import App, Project
-from .utility import (
+from turbocase.enums import App, Project
+from turbocase.utility import (
     HINT_PREFIX,
     file_exists_in_project,
     print_banner,
@@ -12,14 +12,14 @@ from .utility import (
     get_result_color,
     CONFIG_FILE_PATH,
 )
-from .__init__ import __version__
-from .Testiny import Testiny
+from turbocase.__init__ import __version__
+from turbocase.Testiny import Testiny
 
 HELP_MESSAGE = "Show help"
 SUCCESS_PREFIX = ":heavy_check_mark:"
 FAILURE_PREFIX = "[bold][ERR][/bold]"
 
-# change style of `back tick quoted text` in help messages
+# changing style of `back tick quoted text` in help messages
 RichHelpFormatter.styles["argparse.syntax"] = "bold yellow"
 
 RichHelpFormatter.styles["argparse.prog"] = "bold yellow"
