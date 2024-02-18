@@ -525,7 +525,11 @@ def main():
 
     add_read_command(subparsers)
 
-    parse_args(parser)
+    try:
+        parse_args(parser)
+    except KeyboardInterrupt:
+        print("\nKeyboard interrupt detected. Exiting...")
+        exit(130)
 
 
 if __name__ == "__main__":
