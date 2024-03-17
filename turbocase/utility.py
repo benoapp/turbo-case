@@ -7,13 +7,8 @@ from turbocase.__init__ import __version__
 from turbocase.enums import Color, Project
 
 HINT_PREFIX = "[blue][bold]Hint:[/bold]"
-ERROR_404_HINT = (
-    f"{HINT_PREFIX} Are you sure you used the correct test case ID?\n"
-    f"{HINT_PREFIX} Are you sure the project ID in the test case file is accurate?"
-)
-ERROR_403_HINT = f"{HINT_PREFIX} Are you sure you used the correct API key? Try [yellow]`turbocase config --help`[/yellow]."
-
-CONFIG_FILE_PATH = os.path.expanduser("~/.turbocase.toml")
+SUCCESS_PREFIX = ":heavy_check_mark:"
+FAILURE_PREFIX = "[bold][ERR][/bold]"
 
 BANNER = r"""
 ████████╗██╗   ██╗██████╗ ██████╗  ██████╗        ██████╗ █████╗ ███████╗███████╗
@@ -23,6 +18,20 @@ BANNER = r"""
    ██║   ╚██████╔╝██║  ██║██████╔╝╚██████╔╝      ╚██████╗██║  ██║███████║███████╗
    ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚═════╝  ╚═════╝        ╚═════╝╚═╝  ╚═╝╚══════╝╚══════╝
 """
+
+
+class NotTurboCaseProject(Exception):
+    """Base class for all TurboCase exceptions."""
+
+    def __init__(self, message: str | None = None):
+        if message is None:
+            self.message = (
+                "Could not find a [yellow]`.turbocase`[/yellow] folder. "
+                "Are you sure you are in a TurboCase project folder?"
+            )
+        else:
+            self.message = message
+        super().__init__(self.message)
 
 
 def print_banner():
@@ -36,9 +45,29 @@ def print_banner():
     console.rule(style="cyan", characters="═")
 
 
-def get_turbocase_configuration(configuration_name: str) -> Any:
+def get_turbocase_folder_path(*, __current_dir: str | None = None) -> str:
     """
-    Retrieve the value of a configuration from the ~/.turbocase.toml file.
+    Get the path to the .turbocase folder of a turbocase project.
+
+    Returns:
+        str: The path to the .turbocase folder.
+    """
+    if __current_dir is None:
+        __current_dir = os.getcwd()
+
+    turbocase_folder_path = os.path.join(__current_dir, ".turbocase")
+    if os.path.exists(turbocase_folder_path):
+        return turbocase_folder_path
+
+    if os.path.ismount(__current_dir) or __current_dir == "/":
+        raise NotTurboCaseProject()
+
+    return get_turbocase_folder_path(__current_dir=os.path.dirname(__current_dir))
+
+
+def get_project_configuration(configuration_name: str) -> Any:
+    """
+    Retrieve the value of a project configuration from the .turbocase/project.toml file.
 
     Args:
         configuration_name (str): The name of the configuration to retrieve.
@@ -50,15 +79,14 @@ def get_turbocase_configuration(configuration_name: str) -> Any:
         KeyError: If the configuration does not exist in the file.
             This can happen if the file is corrupted.
     """
-    with open(CONFIG_FILE_PATH, "r", encoding="utf-8") as config_file:
+    config_file_path = os.path.join(get_turbocase_folder_path(), "project.toml")
+    with open(config_file_path, "r") as config_file:
         configurations = toml.load(config_file)
         try:
             return configurations[configuration_name]
         except KeyError:
             raise KeyError(
-                "Config file is corrupted. "
-                "Run [yellow]`turbocase config --api-key <YOUR_API_KEY>`[/yellow] to fix it.\n"
-                "See [yellow]`turbocase config --help`[/yellow] for more information."
+                "Turbocase folder is corrupted. Use [yellow]`turbocase init`[/yellow] to reinitialize it."
             )
 
 
@@ -89,12 +117,27 @@ def get_project_id(project: Project, project_path: str) -> int:
             )
 
 
-def print_error_hints(e: Exception, *, console: Console):
-    if isinstance(e, HTTPError) and e.response is not None:
+def print_error_hints(e: Exception, *, console: Console) -> None:
+    """
+    Prints error hints based on the type of exception.
+
+    Args:
+        e (Exception): The exception that occurred.
+        console (Console): The console object used for printing.
+    """
+    if isinstance(e, HTTPError):
         if e.response.status_code == 403:
-            console.print(ERROR_403_HINT)
+            console.print(
+                f"{HINT_PREFIX} Use [yellow]`turbocase init`[/yellow] to initialize a new project."
+            )
         elif e.response.status_code == 404:
-            console.print(ERROR_404_HINT)
+            console.print(
+                f"{HINT_PREFIX} Are you sure you used the correct test case ID?"
+            )
+    elif isinstance(e, NotTurboCaseProject):
+        console.print(
+            f"{HINT_PREFIX} Use [yellow]`turbocase init`[/yellow] to initialize a new project."
+        )
 
 
 def get_result_color(created_files_n: int, file_n: int) -> Color:

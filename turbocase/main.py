@@ -6,18 +6,19 @@ from rich.console import Console
 from turbocase.enums import App, Project
 from turbocase.utility import (
     HINT_PREFIX,
+    FAILURE_PREFIX,
+    SUCCESS_PREFIX,
+    NotTurboCaseProject,
     file_exists_in_project,
+    get_turbocase_folder_path,
     print_banner,
     print_error_hints,
     get_result_color,
-    CONFIG_FILE_PATH,
 )
 from turbocase.__init__ import __version__
 from turbocase.Testiny import Testiny
 
 HELP_MESSAGE = "Show help"
-SUCCESS_PREFIX = ":heavy_check_mark:"
-FAILURE_PREFIX = "[bold][ERR][/bold]"
 
 # changing style of `back tick quoted text` in help messages
 RichHelpFormatter.styles["argparse.syntax"] = "bold yellow"
@@ -389,36 +390,24 @@ def handle_generate_command(args: argparse.Namespace, *, console: Console):
     """
     try:
         os.chdir(args.project_path)
-        if not os.path.exists(".turbocase/project.toml"):
-            console.print(
-                f"[red]{FAILURE_PREFIX} No project found in the given path. "
-                "Run [yellow]`turbocase project --help`[/yellow] "
-                "for more information on how to initialize a project."
-            )
-            exit(1)
 
-        folder = file_exists_in_project(f"{args.test_title}.yaml", args.project_path)
-        if folder:
+        folder_name = file_exists_in_project(
+            f"{args.test_title}.yaml", args.project_path
+        )
+        if folder_name is not None:
             console.print(
-                f"[red]{FAILURE_PREFIX} Test case with the given title already exists in the project (Under `{folder}`).\n"
+                f"[red]{FAILURE_PREFIX} Test case with the given title already exists in the project (Under `{folder_name}`).\n"
                 f"{HINT_PREFIX} Consider using the app and/or project names in the title to avoid conflicts."
             )
             exit(1)
 
-        template = Testiny.generate_test_case_template()
-
-        full_template_path = os.path.join(
+        template_path = os.path.join(
             App[args.app.upper()].value.path, f"{args.test_title}.yaml"
         )
-        if not os.path.exists(os.path.dirname(full_template_path)):
-            console.print(
-                f"[red]{FAILURE_PREFIX} Project folder is corrupted. "
-                "Run [yellow]`turbocase project --help`[/yellow] "
-                "for more information on how to re-initialize the project."
-            )
-            exit(1)
 
-        with open(full_template_path, "w") as template_file:
+        template = Testiny.generate_test_case_template()
+
+        with open(template_path, "w") as template_file:
             template_file.write(template)
 
         console.print(
@@ -444,16 +433,13 @@ def parse_args(parser: argparse.ArgumentParser):
     args = parser.parse_args()
     console = Console()
 
-    if not os.path.exists(CONFIG_FILE_PATH) and args.selected_command not in (
-        "config",
-        None,
-    ):
-        console.print(
-            f"[red]{FAILURE_PREFIX} Configuration file not found. "
-            f"Run [yellow]`turbocase config --api-key <YOUR_API_KEY>`[/yellow].\n"
-            f"See [yellow]`turbocase config --help`[/yellow] for more information."
-        )
-        exit(1)
+    try:
+        get_turbocase_folder_path()
+    except NotTurboCaseProject as e:
+        if args.selected_command not in ("init", None):
+            console.print(f"[red]{FAILURE_PREFIX} {e}")
+            print_error_hints(e, console=console)
+            exit(1)
 
     if args.selected_command is None:
         print_banner()
