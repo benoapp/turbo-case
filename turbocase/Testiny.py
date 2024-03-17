@@ -5,7 +5,7 @@ import requests
 import yaml
 import json
 import os
-from turbocase.utility import get_project_id, get_turbocase_configuration
+from turbocase.utility import get_project_id, get_project_configuration
 from turbocase.enums import App, Project, UpsertAction
 
 
@@ -68,7 +68,7 @@ class Testiny:
         headers = {
             "Content-Type": Testiny.__CONTENT_TYPE,
             "Accept": Testiny.__CONTENT_TYPE,
-            "X-Api-Key": get_turbocase_configuration("api_key"),
+            "X-Api-Key": get_project_configuration("API_KEY"),
         }
 
         response = requests.request(
@@ -128,7 +128,7 @@ class Testiny:
                 ),
                 "project_id": project_id,
                 "template": "TEXT",
-                "owner_user_id": get_turbocase_configuration("owner_user_id"),
+                "owner_user_id": get_project_configuration("OWNER_USER_ID"),
             }
         )
 
@@ -174,7 +174,7 @@ class Testiny:
                 ),
                 "project_id": project_id,
                 "template": "TEXT",
-                "owner_user_id": get_turbocase_configuration("owner_user_id"),
+                "owner_user_id": get_project_configuration("OWNER_USER_ID"),
                 "_etag": etag,
             }
         )
@@ -199,7 +199,7 @@ class Testiny:
         url = urljoin(Testiny.__API_URL, f"testcase/{test_case_id}")
         headers = {
             "Accept": Testiny.__CONTENT_TYPE,
-            "X-Api-Key": get_turbocase_configuration("api_key"),
+            "X-Api-Key": get_project_configuration("API_KEY"),
         }
 
         response = requests.request("GET", url, headers=headers, timeout=10)
@@ -225,7 +225,7 @@ class Testiny:
         headers = {
             "Content-Type": Testiny.__CONTENT_TYPE,
             "Accept": Testiny.__CONTENT_TYPE,
-            "X-Api-Key": get_turbocase_configuration("api_key"),
+            "X-Api-Key": get_project_configuration("API_KEY"),
         }
 
         test_path = os.path.join(project_path, app.value.path, f"{test_title}.yaml")
@@ -286,7 +286,7 @@ class Testiny:
         )
 
     @staticmethod
-    def get_project_id(project_name: str) -> int | None:
+    def get_project_id(project_name: str, api_key: str) -> int | None:
         """Gets the ID of a project by its name
 
         Args:
@@ -300,7 +300,7 @@ class Testiny:
         headers = {
             "Content-Type": Testiny.__CONTENT_TYPE,
             "Accept": Testiny.__CONTENT_TYPE,
-            "X-Api-Key": get_turbocase_configuration("api_key"),
+            "X-Api-Key": api_key,
         }
 
         response = requests.request(
