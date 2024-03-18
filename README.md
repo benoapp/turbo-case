@@ -36,22 +36,20 @@ Or, from GitHub (development version):
 pipx install git+https://github.com/benoapp/turbo-case.git
 ```
 
-Next, configure `turbocase` by running the following:
-```shell
-turbocase config --api-key <YOUR_TESTINY_API_KEY>
-```
 
 You can generate an Testiny API key by the following the instructions [here](https://app.testiny.io/settings/apikeys).
 
 ## Setup
 
-1. Use `turbocase project <PROJ_NAME>` to initialize a test management project in the current directory.
+Turbocase is an opinionated tool that assumes you have an App available for all platforms (web, ios, and Android).
+
+1. Use `turbocase init` to initialize a test management project in the current directory.
 
 This command will automatically create the following folder structure:
 
 ```shell
-path/to/project/project_name
-├── .project.toml
+.
+├── .turbocase/project.toml
 └── app
     ├── web
     └── mobile
@@ -59,7 +57,26 @@ path/to/project/project_name
         └── ios
 ```
 
-The `.project.toml` file contains the configuration of the project.
+2. Configure your test management tool
+
+Current Supported Systems
+- Testiny 
+
+A guide to how to add support a new test management system soon.
+
+Next, configure `turbocase` by running the following:
+```shell
+turbocase config --tool Testiny
+```
+
+Turbo case will guide you through config steps. It usually includes:
+- entering the api key
+- mapping each project with the test management tool
+
+
+3. You can import test cases from a Test Management System
+
+Use the command `turbocase import`
 
 ## Usage
 

@@ -3,23 +3,24 @@ from rich_argparse import RichHelpFormatter, HelpPreviewAction
 import toml
 import os
 from rich.console import Console
-from .enums import App, Project
-from .utility import (
+from turbocase.enums import App, Project
+from turbocase.utility import (
     HINT_PREFIX,
+    FAILURE_PREFIX,
+    SUCCESS_PREFIX,
+    NotTurboCaseProject,
     file_exists_in_project,
+    get_turbocase_folder_path,
     print_banner,
     print_error_hints,
     get_result_color,
-    CONFIG_FILE_PATH,
 )
-from .__init__ import __version__
-from .Testiny import Testiny
+from turbocase.__init__ import __version__
+from turbocase.Testiny import Testiny
 
 HELP_MESSAGE = "Show help"
-SUCCESS_PREFIX = ":heavy_check_mark:"
-FAILURE_PREFIX = "[bold][ERR][/bold]"
 
-# change style of `back tick quoted text` in help messages
+# changing style of `back tick quoted text` in help messages
 RichHelpFormatter.styles["argparse.syntax"] = "bold yellow"
 
 RichHelpFormatter.styles["argparse.prog"] = "bold yellow"
@@ -89,8 +90,8 @@ def add_read_command(subparsers: argparse._SubParsersAction):
     """
     read_parser = subparsers.add_parser(
         "read",
-        help="Read existing test cases (search by ID)",
-        description="Read existing test cases (search by ID)",
+        help="Read existing test cases from the remote server (search by ID)",
+        description="Read existing test cases from the remote server (search by ID)",
         add_help=False,
         formatter_class=RichHelpFormatter,
     )
@@ -222,97 +223,36 @@ def handle_upsert_command(args: argparse.Namespace, *, console: Console):
         )
 
 
-def add_config_command(subparsers: argparse._SubParsersAction):
+def add_init_command(subparsers: argparse._SubParsersAction):
     """
-    Add the 'config' command to the subparsers.
+    Add the 'init' command to the subparsers.
 
     Args:
         subparsers (argparse._SubParsersAction): The subparsers object to add the command to.
     """
-    config_parser = subparsers.add_parser(
-        "config",
-        help="Configure Turbo-Case",
-        description="Configure Turbo-Case",
+    init_parser = subparsers.add_parser(
+        "init",
+        help="Create an empty test management project repository.",
+        description="Create an empty test management project repository.",
         add_help=False,
         formatter_class=RichHelpFormatter,
     )
-
-    config_parser.add_argument(
-        "-k",
-        "--api-key",
-        required=True,
-        metavar="<key>",
-        help="Testiny API key",
+    init_parser.add_argument(
+        "-e",
+        "--env-var",
+        action="store_true",
+        help="Use the environment variable `TURBOCASE_API_KEY` instead of entering the API key.",
     )
 
-    config_parser.add_argument(
-        "-h",
-        "--help",
-        action="help",
-        help=HELP_MESSAGE,
-    )
-
-
-def handle_config_command(args: argparse.Namespace, *, console: Console):
-    """
-    Handles the config command by configuring the Turbo-Case settings.
-
-    Args:
-        args (argparse.Namespace): The parsed command-line arguments.
-
-    Returns:
-        None
-    """
-    try:
-        configurations = {
-            "api_key": args.api_key,
-            "owner_user_id": Testiny.get_owner_user_id(args.api_key),
-        }
-
-        with open(CONFIG_FILE_PATH, "w") as config_file:
-            toml.dump(configurations, config_file)
-
-        console.print(
-            f"[green]{SUCCESS_PREFIX} Successfully configured Turbo-Case.\n"
-            f"Run [yellow]`turbocase --help`[/yellow] for more information on how to use turbocase."
-        )
-    except Exception as e:
-        console.print(
-            f"[red]{FAILURE_PREFIX} Failed to configure Turbo-Case. Reason:\n[dark_orange]{e}"
-        )
-        print_error_hints(e, console=console)
-
-
-def add_project_command(subparsers: argparse._SubParsersAction):
-    """
-    Add the 'project' command to the subparsers.
-
-    Args:
-        subparsers (argparse._SubParsersAction): The subparsers object to add the command to.
-    """
-    project_parser = subparsers.add_parser(
-        "project",
-        help="Initialize a new  test management project",
-        description="Initialize a new  test management project",
-        add_help=False,
-        formatter_class=RichHelpFormatter,
-    )
-
-    project_parser.add_argument(
-        "project_name",
-        help="Name of the project",
-        metavar="<name>",
-    )
-
-    project_parser.add_argument(
-        "root_path",
-        help="Path of the project. Default: current directory",
-        metavar="<path>",
+    init_parser.add_argument(
+        "directory",
+        help="Path of the project. Default: current directory.",
+        metavar="<director>",
         nargs="?",
         default=".",
     )
 
-    project_parser.add_argument(
+    init_parser.add_argument(
         "-h",
         "--help",
         action="help",
@@ -320,9 +260,9 @@ def add_project_command(subparsers: argparse._SubParsersAction):
     )
 
 
-def handle_project_command(args: argparse.Namespace, *, console: Console):
+def handle_init_command(args: argparse.Namespace, *, console: Console):
     """
-    Handles the 'project' command by creating folders and files for the project.
+    Handles the 'int' command by creating folders and files for the project.
 
     Args:
         args (argparse.Namespace): The parsed command-line arguments.
@@ -331,37 +271,63 @@ def handle_project_command(args: argparse.Namespace, *, console: Console):
     Returns:
         None
     """
-    try:
-        project_path = os.path.join(args.root_path, args.project_name)
 
-        projects_ids = dict()
-        for project in Project:
-            while True:
-                full_project_name = console.input(
-                    f"[green]Enter the full project name of the [yellow]`{project.name}`[/yellow] App in Testiny: "
-                )
-                project_id = Testiny.get_project_id(full_project_name)
-                if project_id:
-                    break
-                else:
-                    console.print(
-                        f"[red]{FAILURE_PREFIX} No project found with the given name. Try again."
-                    )
-            projects_ids[project.name] = project_id
-            console.print(
-                f"[green]{SUCCESS_PREFIX} Project found with ID: [yellow]`{project_id}`[/yellow]."
+    def get_project_id(project: Project, api_key: str) -> int:
+        while True:
+            full_project_name = console.input(
+                f"[green]Enter the full project name of the [yellow]`{project.name}`[/yellow] App in Testiny: "
             )
-            console.print()  # cosmetic
+
+            project_id = Testiny.get_project_id(full_project_name, api_key)
+            if project_id:
+                console.print(
+                    f"[green]{SUCCESS_PREFIX} Project found with ID: [yellow]`{project_id}`[/yellow].\n"
+                )
+                return project_id
+
+            console.print(
+                f"[red]{FAILURE_PREFIX} No project found with the given name. Try again."
+            )
+
+    def get_api_key(args, console) -> str:
+        if args.env_var:
+            api_key = os.environ.get("TURBOCASE_API_KEY")
+            if api_key is None:
+                console.print(
+                    f"[red]{FAILURE_PREFIX} Environment variable [yellow]`TURBOCASE_API_KEY`[/yellow] not found. "
+                    "Please set the environment variable or remove [yellow]`--env-var`[/yellow] flag and try again."
+                )
+                exit(1)
+        else:
+            api_key = console.input("[green]Enter your Testiny API key: ")
+        return api_key
+
+    try:
+        os.chdir(args.directory)
+
+        api_key = get_api_key(args, console)
+
+        owner_user_id = Testiny.get_owner_user_id(api_key)
+
+        projects_ids = {
+            project.name: get_project_id(project, api_key) for project in Project
+        }
+
+        project_configurations = {
+            "API_KEY": api_key,
+            "OWNER_USER_ID": owner_user_id,
+            **projects_ids,
+        }
 
         for app in App:
-            os.makedirs(os.path.join(project_path, app.value.path), exist_ok=True)
+            os.makedirs(app.value.path, exist_ok=True)
 
-        with open(os.path.join(project_path, ".project.toml"), "w") as project_file:
-            toml.dump(projects_ids, project_file)
+        os.makedirs(".turbocase", exist_ok=True)
+        with open(".turbocase/project.toml", "w") as project_configuration_file:
+            toml.dump(project_configurations, project_configuration_file)
 
-        console.print(
-            f"[green]{SUCCESS_PREFIX} Successfully initialized project [yellow]`{args.project_name}`[/yellow]."
-        )
+        console.rule("[cyan]Results", characters="═", style="cyan")
+        console.print(f"[green]{SUCCESS_PREFIX} Successfully initialized project.")
     except Exception as e:
         console.print(
             f"[red]{FAILURE_PREFIX} Failed to create project. Reason:\n[dark_orange]{e}"
@@ -425,38 +391,25 @@ def handle_generate_command(args: argparse.Namespace, *, console: Console):
         None
     """
     try:
-        if not os.path.exists(os.path.join(args.project_path, ".project.toml")):
-            console.print(
-                f"[red]{FAILURE_PREFIX} No project found in the given path. "
-                "Run [yellow]`turbocase project --help`[/yellow] "
-                "for more information on how to initialize a project."
-            )
-            exit(1)
+        os.chdir(args.project_path)
 
-        folder = file_exists_in_project(f"{args.test_title}.yaml", args.project_path)
-        if folder:
+        folder_name = file_exists_in_project(
+            f"{args.test_title}.yaml", args.project_path
+        )
+        if folder_name is not None:
             console.print(
-                f"[red]{FAILURE_PREFIX} Test case with the given title already exists in the project (Under `{folder}`).\n"
+                f"[red]{FAILURE_PREFIX} Test case with the given title already exists in the project (Under `{folder_name}`).\n"
                 f"{HINT_PREFIX} Consider using the app and/or project names in the title to avoid conflicts."
             )
             exit(1)
 
+        template_path = os.path.join(
+            App[args.app.upper()].value.path, f"{args.test_title}.yaml"
+        )
+
         template = Testiny.generate_test_case_template()
 
-        full_template_path = os.path.join(
-            args.project_path,
-            App[args.app.upper()].value.path,
-            f"{args.test_title}.yaml",
-        )
-        if not os.path.exists(os.path.dirname(full_template_path)):
-            console.print(
-                f"[red]{FAILURE_PREFIX} Project folder is corrupted. "
-                "Run [yellow]`turbocase project --help`[/yellow] "
-                "for more information on how to re-initialize the project."
-            )
-            exit(1)
-
-        with open(full_template_path, "w") as template_file:
+        with open(template_path, "w") as template_file:
             template_file.write(template)
 
         console.print(
@@ -482,16 +435,13 @@ def parse_args(parser: argparse.ArgumentParser):
     args = parser.parse_args()
     console = Console()
 
-    if not os.path.exists(CONFIG_FILE_PATH) and args.selected_command not in (
-        "config",
-        None,
-    ):
-        console.print(
-            f"[red]{FAILURE_PREFIX} Configuration file not found. "
-            f"Run [yellow]`turbocase config --api-key <YOUR_API_KEY>`[/yellow].\n"
-            f"See [yellow]`turbocase config --help`[/yellow] for more information."
-        )
-        exit(1)
+    try:
+        get_turbocase_folder_path()
+    except NotTurboCaseProject as e:
+        if args.selected_command not in ("init", None):
+            console.print(f"[red]{FAILURE_PREFIX} {e}")
+            print_error_hints(e, console=console)
+            exit(1)
 
     if args.selected_command is None:
         print_banner()
@@ -506,12 +456,8 @@ def parse_args(parser: argparse.ArgumentParser):
         with console.status("[bold green]Upserting test cases..."):
             handle_upsert_command(args, console=console)
 
-    elif args.selected_command == "config":
-        with console.status("[bold green]Configuring Turbo-Case..."):
-            handle_config_command(args, console=console)
-
-    elif args.selected_command == "project":
-        handle_project_command(args, console=console)
+    elif args.selected_command == "init":
+        handle_init_command(args, console=console)
 
     elif args.selected_command == "generate":
         handle_generate_command(args, console=console)
@@ -522,9 +468,7 @@ def main():
 
     add_global_options(parser)
 
-    add_config_command(subparsers)
-
-    add_project_command(subparsers)
+    add_init_command(subparsers)
 
     add_generate_command(subparsers)
 
@@ -532,7 +476,11 @@ def main():
 
     add_read_command(subparsers)
 
-    parse_args(parser)
+    try:
+        parse_args(parser)
+    except KeyboardInterrupt:
+        print("\nKeyboard interrupt detected. Exiting...")
+        exit(130)
 
 
 if __name__ == "__main__":
