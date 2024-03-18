@@ -5,7 +5,7 @@ import requests
 import yaml
 import json
 import os
-from turbocase.utility import get_project_id, get_project_configuration
+from turbocase.utility import get_project_id_from_config_file, get_project_configuration
 from turbocase.enums import App, Project, UpsertAction
 
 
@@ -232,7 +232,8 @@ class Testiny:
         test_case_content = Testiny.__read_test_case_file(test_path)
 
         projects_ids = [
-            get_project_id(project, project_path) for project in app.value.projects
+            get_project_id_from_config_file(project, project_path)
+            for project in app.value.projects
         ]
 
         found_test_cases = Testiny.__find_test_case_by_title(test_title, projects_ids)

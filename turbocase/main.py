@@ -90,8 +90,8 @@ def add_read_command(subparsers: argparse._SubParsersAction):
     """
     read_parser = subparsers.add_parser(
         "read",
-        help="Read existing test cases (search by ID)",
-        description="Read existing test cases (search by ID)",
+        help="Read existing test cases from the remote server (search by ID)",
+        description="Read existing test cases from the remote server (search by ID)",
         add_help=False,
         formatter_class=RichHelpFormatter,
     )
@@ -272,7 +272,7 @@ def handle_init_command(args: argparse.Namespace, *, console: Console):
         None
     """
 
-    def get_project_id(project: Project):
+    def get_project_id(project: Project, api_key: str) -> int:
         while True:
             full_project_name = console.input(
                 f"[green]Enter the full project name of the [yellow]`{project.name}`[/yellow] App in Testiny: "
@@ -289,13 +289,13 @@ def handle_init_command(args: argparse.Namespace, *, console: Console):
                 f"[red]{FAILURE_PREFIX} No project found with the given name. Try again."
             )
 
-    def get_api_key(args, console):
+    def get_api_key(args, console) -> str:
         if args.env_var:
             api_key = os.environ.get("TURBOCASE_API_KEY")
             if api_key is None:
                 console.print(
                     f"[red]{FAILURE_PREFIX} Environment variable [yellow]`TURBOCASE_API_KEY`[/yellow] not found. "
-                    "Please set the environment variable or remove `-e` / `--env-var` flag and try again."
+                    "Please set the environment variable or remove [yellow]`--env-var`[/yellow] flag and try again."
                 )
                 exit(1)
         else:
@@ -309,7 +309,9 @@ def handle_init_command(args: argparse.Namespace, *, console: Console):
 
         owner_user_id = Testiny.get_owner_user_id(api_key)
 
-        projects_ids = {project.name: get_project_id(project) for project in Project}
+        projects_ids = {
+            project.name: get_project_id(project, api_key) for project in Project
+        }
 
         project_configurations = {
             "API_KEY": api_key,
