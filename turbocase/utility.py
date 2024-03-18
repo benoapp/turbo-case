@@ -170,7 +170,7 @@ def file_exists_in_project(file_name, project_path) -> str | None:
     Returns:
         str | None: The name of the folder where the file exists, or None if the file is not found.
     """
-    for root, _, files in os.walk(project_path):
+    for root, _, files in os.walk(os.path.join(project_path, "app")):
         if file_name in files:
             return os.path.basename(root)
     return None
