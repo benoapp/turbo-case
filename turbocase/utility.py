@@ -90,7 +90,7 @@ def get_project_configuration(configuration_name: str) -> Any:
             )
 
 
-def get_project_id(project: Project, project_path: str) -> int:
+def get_project_id_from_config_file(project: Project, project_path: str) -> int:
     """
     Get the project ID for a given sub-app from the .turbocase/project.toml file.
 
