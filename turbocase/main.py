@@ -237,12 +237,6 @@ def add_init_command(subparsers: argparse._SubParsersAction):
         add_help=False,
         formatter_class=RichHelpFormatter,
     )
-    init_parser.add_argument(
-        "-e",
-        "--env-var",
-        action="store_true",
-        help="Use the environment variable `TURBOCASE_API_KEY` instead of entering the API key.",
-    )
 
     init_parser.add_argument(
         "directory",
@@ -272,65 +266,21 @@ def handle_init_command(args: argparse.Namespace, *, console: Console):
         None
     """
 
-    def get_project_id(project: Project, api_key: str) -> int:
-        while True:
-            full_project_name = console.input(
-                f"[green]Enter the full project name of the [yellow]`{project.name}`[/yellow] App in Testiny: "
-            )
-
-            project_id = Testiny.get_project_id(full_project_name, api_key)
-            if project_id:
-                console.print(
-                    f"[green]{SUCCESS_PREFIX} Project found with ID: [yellow]`{project_id}`[/yellow].\n"
-                )
-                return project_id
-
-            console.print(
-                f"[red]{FAILURE_PREFIX} No project found with the given name. Try again."
-            )
-
-    def get_api_key(args, console) -> str:
-        if args.env_var:
-            api_key = os.environ.get("TURBOCASE_API_KEY")
-            if api_key is None:
-                console.print(
-                    f"[red]{FAILURE_PREFIX} Environment variable [yellow]`TURBOCASE_API_KEY`[/yellow] not found. "
-                    "Please set the environment variable or remove [yellow]`--env-var`[/yellow] flag and try again."
-                )
-                exit(1)
-        else:
-            api_key = console.input("[green]Enter your Testiny API key: ")
-        return api_key
-
     try:
         os.chdir(args.directory)
-
-        api_key = get_api_key(args, console)
-
-        owner_user_id = Testiny.get_owner_user_id(api_key)
-
-        projects_ids = {
-            project.name: get_project_id(project, api_key) for project in Project
-        }
-
-        project_configurations = {
-            "API_KEY": api_key,
-            "OWNER_USER_ID": owner_user_id,
-            **projects_ids,
-        }
 
         for app in App:
             os.makedirs(app.value.path, exist_ok=True)
 
         os.makedirs(".turbocase", exist_ok=True)
-        with open(".turbocase/project.toml", "w") as project_configuration_file:
-            toml.dump(project_configurations, project_configuration_file)
 
-        console.rule("[cyan]Results", characters="═", style="cyan")
         console.print(f"[green]{SUCCESS_PREFIX} Successfully initialized project.")
+        console.print(
+            f"{HINT_PREFIX} Use [yellow]`turbocase config`[/yellow] to configure the project."
+        )
     except Exception as e:
         console.print(
-            f"[red]{FAILURE_PREFIX} Failed to create project. Reason:\n[dark_orange]{e}"
+            f"[red]{FAILURE_PREFIX} Failed to initialize project. Reason:\n[dark_orange]{e}"
         )
         print_error_hints(e, console=console)
 
@@ -422,6 +372,127 @@ def handle_generate_command(args: argparse.Namespace, *, console: Console):
         print_error_hints(e, console=console)
 
 
+def add_config_command(subparsers: argparse._SubParsersAction):
+    """
+    Add the 'config' command to the subparsers.
+
+    Args:
+        subparsers (argparse._SubParsersAction): The subparsers object to add the command to.
+    """
+    config_parser = subparsers.add_parser(
+        "config",
+        help="Configure the project",
+        description="Configure the project",
+        add_help=False,
+        formatter_class=RichHelpFormatter,
+    )
+
+    config_parser.add_argument(
+        "--tool",
+        choices=("Testiny",),
+        help="The test management tool to use. Default: Testiny.",
+        metavar="<tool>",
+        default="Testiny",
+        required=True,
+    )
+
+    config_parser.add_argument(
+        "-e",
+        "--env-var",
+        action="store_true",
+        help="Use the environment variable `TURBOCASE_API_KEY` instead of entering the API key.",
+    )
+
+    config_parser.add_argument(
+        "directory",
+        help="Path of the project. Default: current directory.",
+        metavar="<directory>",
+        nargs="?",
+        default=".",
+    )
+
+    config_parser.add_argument(
+        "-h",
+        "--help",
+        action="help",
+        help=HELP_MESSAGE,
+    )
+
+
+def handle_config_command(args: argparse.Namespace, *, console: Console):
+    """
+    Handles the 'config' command by writing configurations in the `.turbocase` folder.
+
+    Args:
+        args (argparse.Namespace): The parsed command-line arguments.
+        console (Console): The rich console object.
+
+    Returns:
+        None
+    """
+
+    def get_project_id(project: Project, api_key: str) -> int:
+        while True:
+            full_project_name = console.input(
+                f"[green]Enter the full project name of the [yellow]`{project.name}`[/yellow] App in Testiny: "
+            )
+
+            project_id = Testiny.get_project_id(full_project_name, api_key)
+            if project_id:
+                console.print(
+                    f"[green]{SUCCESS_PREFIX} Project found with ID: [yellow]`{project_id}`[/yellow].\n"
+                )
+                return project_id
+
+            console.print(
+                f"[red]{FAILURE_PREFIX} No project found with the given name. Try again."
+            )
+
+    def get_api_key(args, console) -> str:
+        if args.env_var:
+            api_key = os.environ.get("TURBOCASE_API_KEY")
+            if api_key is None:
+                console.print(
+                    f"[red]{FAILURE_PREFIX} Environment variable [yellow]`TURBOCASE_API_KEY`[/yellow] not found. "
+                    "Please set the environment variable or remove [yellow]`--env-var`[/yellow] flag and try again."
+                )
+                exit(1)
+        else:
+            api_key = console.input("[green]Enter your Testiny API key: ")
+        return api_key
+
+    try:
+        os.chdir(args.directory)
+
+        api_key = get_api_key(args, console)
+
+        owner_user_id = Testiny.get_owner_user_id(api_key)
+
+        projects_ids = {
+            project.name: get_project_id(project, api_key) for project in Project
+        }
+
+        project_configurations = {
+            "API_KEY": api_key,
+            "OWNER_USER_ID": owner_user_id,
+            **projects_ids,
+        }
+
+        with open(".turbocase/project.toml", "w") as project_configuration_file:
+            toml.dump(project_configurations, project_configuration_file)
+
+        console.rule("[cyan]Results", characters="═", style="cyan")
+        console.print(f"[green]{SUCCESS_PREFIX} Successfully configured project.")
+        console.print(
+            f"{HINT_PREFIX} Use [yellow]`turbocase generate`[/yellow] to generate a test case template."
+        )
+    except Exception as e:
+        console.print(
+            f"[red]{FAILURE_PREFIX} Failed to configure project. Reason:\n[dark_orange]{e}"
+        )
+        print_error_hints(e, console=console)
+
+
 def parse_args(parser: argparse.ArgumentParser):
     """
     Parse the command line arguments and execute the corresponding command.
@@ -462,6 +533,9 @@ def parse_args(parser: argparse.ArgumentParser):
     elif args.selected_command == "generate":
         handle_generate_command(args, console=console)
 
+    elif args.selected_command == "config":
+        handle_config_command(args, console=console)
+
 
 def main():
     parser, subparsers = create_main_and_sub_parsers()
@@ -469,6 +543,8 @@ def main():
     add_global_options(parser)
 
     add_init_command(subparsers)
+
+    add_config_command(subparsers)
 
     add_generate_command(subparsers)
 
